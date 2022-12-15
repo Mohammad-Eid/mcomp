@@ -110,6 +110,7 @@ extern bool is_var_loop;
 class Object {
 public:
     virtual void print (ostream& os) = 0;
+    virtual string getType() {return " ";};
     virtual void pcodegen(ostream& os) = 0;
     virtual Object * clone () const {return NULL;}
     virtual ~Object () {}
@@ -372,6 +373,9 @@ public :
                     break;
                 case 299:
                     os << "or" << endl;
+                    break;
+                case 308:
+                    os << "new" << endl;
                     break;
             }
 //            is_equal = false;
@@ -1137,6 +1141,9 @@ public:
         os<<"Node name : SimpleType"<<endl;;
         os<<"Type is : "<< (*name_) <<endl;
     }
+    string getType(){
+        return "SimpleType";
+    }
     void pcodegen(ostream& os) {
     }
     virtual Object * clone () const { return new SimpleType(*this);}
@@ -1163,6 +1170,9 @@ public:
 
     void print (ostream& os) {
         os<<"Node name : IdeType"<<endl;
+    }
+    string getType(){
+        return "IdeType";
     }
     void pcodegen(ostream& os) {
         is_var =true;
@@ -1195,6 +1205,14 @@ public :
         assert(type_);
         type_->print(os);
     }
+    string getType(){
+        return "ArrayType";
+    }
+
+    int getSize(){
+    int size=1;
+    size = up_-low_;
+    }
     void pcodegen(ostream& os) {
         assert(type_);
         type_->pcodegen(os);
@@ -1223,6 +1241,9 @@ public :
         assert(record_list_);
         record_list_->print(os);
     }
+    string getType(){
+        return "RecordType";
+    }
     void pcodegen(ostream& os) {
         assert(record_list_);
         record_list_->pcodegen(os);
@@ -1250,6 +1271,9 @@ public :
         os<<"Node name : AddressType"<<endl;
         assert(type_);
         type_->print(os);
+    }
+    string getType(){
+        return "AdressType";
     }
     void pcodegen(ostream& os) {
         assert(type_);
@@ -1289,11 +1313,20 @@ public:
     }
     void pcodegen(ostream& os) {
         assert(type_);
-        if(ST.insert(*name_,"int",stacksize,1)){
-            stacksize++;
+        int size=1;
+
+        if(type_->getType()=="ArrayType"){
+            
         }
-        //os << "hello from var dec assign" << endl;
         type_->pcodegen(os);
+
+        if(ST.insert(*name_,type_->getType(),stacksize,1)){
+            if(type_->getType()!="RecordType"){
+                stacksize+=size;
+            }
+        }
+
+        ST.print();
     }
     virtual Object * clone () const { return new VariableDeclaration(*this);}
 
