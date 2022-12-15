@@ -1,0 +1,406 @@
+==================  Abstract Syntax Tree ================
+ldc 5
+ldc 5
+sto
+ldc 6
+ldc 10
+sto
+ldc 10
+ldc 5
+ldc 5
+ind
+inc 3
+ldc 2
+mul
+sub
+sto
+ldc 11
+ldc 0
+sto
+ldc 12
+ldc 11
+ind
+ldc 2
+mul
+inc 4
+sto
+ldc 5
+ind
+ldc 6
+ind
+geq
+fjp end_if_1
+ldc 5
+ind
+ldc 4
+inc 1
+equ
+fjp else_if_2
+ldc 100
+print
+ujp end_if_2
+else_if_2:
+ldc 200.5
+print
+end_if_2:
+ldc 0.7
+ldc 6
+ind
+add
+dec 1
+ldc 300
+neg
+les
+fjp else_if_3
+ldc 300
+print
+ldc 5
+ldc 10
+sto
+ujp end_if_3
+else_if_3:
+ldc 5
+ldc 750
+sto
+ldc 5
+ind
+inc 1
+print
+end_if_3:
+end_if_1:
+ldc 8
+ldc 10.3
+sto
+ldc 9
+ldc 2.0
+sto
+ldc 7
+ldc 8
+neg
+sto
+loop_1:
+ldc 8
+ind
+ldc 9
+ind
+dec 2
+div
+ldc 0
+geq
+fjp end_loop_1
+loop_2:
+ldc 5
+ind
+ldc 0
+equ
+ldc 6
+ind
+ldc 7
+ind
+equ
+and
+fjp end_loop_2
+ldc 8
+ind
+ldc 100
+inc 2
+les
+fjp end_if_4
+ldc 9
+ind
+ldc 7
+ind
+add
+ldc 3
+grt
+fjp else_if_5
+ldc 8
+ind
+print
+ujp end_if_5
+else_if_5:
+ldc 1
+ldc 5
+ind
+sub
+dec 1
+ldc 100
+dec 200
+grt
+fjp else_if_6
+ldc 9
+ind
+print
+ujp end_if_6
+else_if_6:
+ldc 10
+ind
+print
+end_if_6:
+end_if_5:
+end_if_4:
+ldc 6
+ldc 6
+ind
+dec 1
+sto
+ujp loop_2
+end_loop_2:
+ldc 10
+ldc 8
+ind
+ldc 9
+ind
+sub
+sto
+ldc 8
+ldc 10
+ind
+sto
+ujp loop_1
+end_loop_1:
+ldc 5
+ldc 1
+sto
+ldc 6
+ldc 5
+sto
+ldc 7
+ldc 10
+sto
+loop_3:
+ldc 5
+ind
+ldc 1
+equ
+fjp end_loop_3
+ldc 20
+neg
+print
+loop_4:
+ldc 6
+ind
+ldc 7
+ind
+grt
+fjp end_loop_4
+loop_5:
+ldc 5
+ind
+ldc 0
+grt
+fjp end_loop_5
+ldc 5
+ldc 5
+ind
+dec 1
+sto
+ujp loop_5
+end_loop_5:
+loop_6:
+ldc 6
+ind
+ldc 6
+geq
+fjp end_loop_6
+ldc 789
+print
+ujp loop_6
+end_loop_6:
+ldc 7
+ldc 3
+sto
+loop_7:
+ldc 7
+ind
+ldc 1
+dec 1
+grt
+fjp end_loop_7
+ldc 7
+ldc 1
+ldc 7
+ind
+add
+dec 2
+sto
+ujp loop_7
+end_loop_7:
+ujp loop_4
+end_loop_4:
+ujp loop_3
+end_loop_3:
+ldc 5
+ldc 5
+sto
+ldc 6
+ldc 0
+sto
+ldc 7
+ldc 3
+sto
+ldc 11
+ldc 3
+sto
+ldc 5
+ind
+neg
+ixj end_switch_1
+case_1_1:
+ldc 9
+print
+ujp end_switch_1
+case_2_1:
+ldc 99
+print
+ujp end_switch_1
+case_3_1:
+ldc 999
+print
+ujp end_switch_1
+case_4_1:
+loop_8:
+ldc 6
+ind
+ldc 10
+leq
+fjp end_loop_8
+ldc 6
+ldc 6
+ind
+inc 3
+dec 2
+sto
+ujp loop_8
+end_loop_8:
+ujp end_switch_1
+case_5_1:
+ldc 7
+ind
+neg
+ixj end_switch_2
+case_1_2:
+ldc 6
+ind
+neg
+ixj end_switch_3
+case_1_3:
+loop_9:
+ldc 5
+ind
+fjp end_loop_9
+ldc 5
+ldc 0
+sto
+ujp loop_9
+end_loop_9:
+ujp end_switch_3
+case_2_3:
+ldc 2
+neg
+ixj end_switch_4
+case_1_4:
+ldc 7
+ldc 1
+sto
+ujp end_switch_4
+case_2_4:
+ldc 7
+ldc 2
+sto
+ujp end_switch_4
+case_3_4:
+ldc 7
+ldc 3
+sto
+ujp end_switch_4
+ujp case_3_4
+ujp case_2_4
+ujp case_1_4
+end_switch_4:
+ujp end_switch_3
+case_3_3:
+ldc 7
+ind
+dec 1
+neg
+ixj end_switch_5
+case_1_5:
+ldc 8
+ldc 2.5
+sto
+ujp end_switch_5
+ujp case_1_5
+end_switch_5:
+ujp end_switch_3
+ujp case_3_3
+ujp case_2_3
+ujp case_1_3
+end_switch_3:
+ujp end_switch_2
+case_2_2:
+ldc 11
+ind
+neg
+ixj end_switch_6
+case_1_6:
+ldc 5
+ind
+ldc 6
+ind
+add
+dec 1
+print
+ujp end_switch_6
+case_2_6:
+ldc 8
+ind
+ldc 9
+ind
+div
+dec 2.2
+inc 2.0
+print
+ujp end_switch_6
+case_3_6:
+ldc 3.0
+print
+ujp end_switch_6
+ujp case_3_6
+ujp case_2_6
+ujp case_1_6
+end_switch_6:
+ujp end_switch_2
+ujp case_2_2
+ujp case_1_2
+end_switch_2:
+ujp end_switch_1
+case_6_1:
+ldc 123
+neg
+print
+ujp end_switch_1
+case_7_1:
+ldc 12
+ind
+fjp else_if_7
+ldc 8
+ind
+print
+ujp end_if_7
+else_if_7:
+ldc 12
+ldc 66
+sto
+end_if_7:
+ujp end_switch_1
+ujp case_7_1
+ujp case_6_1
+ujp case_5_1
+ujp case_4_1
+ujp case_3_1
+ujp case_2_1
+ujp case_1_1
+end_switch_1:
+ldc 8
+print

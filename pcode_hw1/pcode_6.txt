@@ -1,0 +1,87 @@
+ldc 5
+ldc 1
+sto
+ldc 6
+ldc 2
+sto
+ldc 7
+ldc 1
+sto
+ldc 5
+ind
+neg
+ixj end_switch_1
+case_1_1:
+ldc 6
+ind
+neg
+ixj end_switch_2
+case_1_2:
+ldc 7
+ldc 5
+sto
+ujp end_switch_2
+case_2_2:
+ldc 7
+ldc 6
+sto
+ujp end_switch_2
+ujp case_2_2
+ujp case_1_2
+end_switch_2:
+ujp end_switch_1
+case_2_1:
+ldc 7
+ldc 4
+sto
+ujp end_switch_1
+case_3_1:
+ldc 7
+ldc 5
+sto
+ujp end_switch_1
+case_4_1:
+ldc 7
+ldc 5
+sto
+ujp end_switch_1
+ujp case_4_1
+ujp case_3_1
+ujp case_2_1
+ujp case_1_1
+end_switch_1:
+loop_1:
+ldc 5
+ind
+ldc 6
+ind
+and
+fjp end_loop_1
+ldc 6
+ind
+ldc 7
+ind
+les
+fjp end_if_1
+loop_2:
+ldc 5
+ind
+ldc 6
+les
+ldc 5
+ind
+ldc 1
+grt
+and
+fjp end_loop_2
+ldc 5
+ldc 6
+ind
+ldc 2
+div
+sto
+ujp loop_2
+end_loop_2:
+end_if_1:
+ujp loop_1
+end_loop_1:

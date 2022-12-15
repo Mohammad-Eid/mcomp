@@ -1,0 +1,39 @@
+==================  Abstract Syntax Tree ================
+Node name : Root/Program. Program name is: omer
+Node name : Begin
+Node name : DeclarationList
+Node name : DeclarationList
+Node name : VariableDeclaration. Var name is: x
+Node name : SimpleType
+Type is : Integer
+Node name : VariableDeclaration. Var name is: y
+Node name : SimpleType
+Type is : Integer
+Node name : StatementList
+Node name : AssignNode name : IdeType
+Node name : Expr
+Unary op is : 287Node name : IntConst. Value is :1
+Node name : StatementList
+Node name : AssignNode name : IdeType
+Node name : Expr
+Binary op is : 286Node name : IntConst. Value is :7
+Node name : Expr
+Binary op is : 287Node name : IdeType
+Node name : IntConst. Value is :6
+Node name : StatementList
+Node name : ConditionalStatementNode name : Expr
+Binary op is : 296Node name : IntConst. Value is :5
+Node name : IdeType
+Node name : StatementList
+Node name : ConditionalStatementNode name : Expr
+Binary op is : 292Node name : IntConst. Value is :7
+Node name : IdeType
+Node name : StatementList
+Node name : AssignNode name : IdeType
+Node name : IntConst. Value is :99
+Node name : StatementList
+Node name : AssignNode name : IdeType
+Node name : IntConst. Value is :99
+Node name : StatementList
+Node name : AssignNode name : IdeType
+Node name : IntConst. Value is :33

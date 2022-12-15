@@ -1,0 +1,30 @@
+PROGRAM nestedCaseExample
+	a FIXED;
+	b FIXED;
+	c FIXED;
+{
+	a = 1;
+	b = 2;
+	c=1;
+	CASE a OF
+	{
+		1:CASE b OF
+		{
+			1:c=5;
+			2:c=6;
+		}
+		2:c=4;
+		3:c=5;
+		4:c=5;		
+	}
+       WHILE (a&b) 
+      { 
+       IF(b<c ) THEN
+           WHILE ( (a<6) & (a>1)) 
+         {  
+           a = b/2 ; 
+        } 
+FI	
+      }
+	  
+	  }

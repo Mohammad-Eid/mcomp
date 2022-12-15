@@ -1,0 +1,18 @@
+PROGRAM if1
+	x FIXED;
+	y FIXED;
+{
+	x=80;
+	y=71;
+	IF (x == y) THEN
+		x = 21;
+		IF (x) THEN
+			WRITE(x);
+		ELSE
+			y = 12;
+		FI
+	ELSE
+		y = x+(3-4)*4.1;
+	FI	
+	
+}

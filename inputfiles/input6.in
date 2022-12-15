@@ -1,0 +1,12 @@
+PROGRAM if1
+	x FIXED;
+	y FIXED;
+{
+	x=80;
+	y=71;
+	IF (x == y) THEN
+		x = 21;
+	ELSE
+		y = 12;
+	FI
+}

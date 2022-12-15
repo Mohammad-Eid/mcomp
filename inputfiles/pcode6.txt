@@ -1,0 +1,21 @@
+ldc 5
+ldc 80 
+sto 
+ldc 6
+ldc 71 
+sto
+ldc 5
+ind
+ldc 6
+ind
+equ
+fjp else_if_1
+ldc 5
+ldc 21
+sto
+ujp end_if_1
+else_if_1:
+ldc 6
+ldc 12
+sto 
+end_id_1:

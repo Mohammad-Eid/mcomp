@@ -1,0 +1,17 @@
+PROGRAM assign2
+	a FIXED;
+	b FIXED;
+	c FIXED;
+	d FLOAT;
+	e FLOAT;
+	f FLOAT;
+{
+	a=3;
+	b=20;
+	c=(a+b)/(b*a);
+	d=10.0;
+	e=2.0;
+	f=d+(e/f);
+           WRITE (f);
+
+}

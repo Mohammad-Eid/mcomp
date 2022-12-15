@@ -1,0 +1,23 @@
+PROGRAM omer
+    x FIXED;
+    y FIXED
+
+{
+
+    x = 1;
+    y = 1;
+
+    CASE x OF
+    {
+        1:CASE y OF
+              {
+                  1:WRITE(9.2);
+
+              }
+
+    }
+
+
+
+
+}
