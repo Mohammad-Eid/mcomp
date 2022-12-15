@@ -102,6 +102,7 @@ extern bool is_print;
 extern bool is_unary;
 extern bool is_var_assign;
 extern bool is_var_loop;
+extern bool is_adress_type;
 /**
  * classes
  */
@@ -1183,10 +1184,13 @@ public:
     }
     void pcodegen(ostream& os) {
         is_var =true;
-        os << "ldc "<< ST.find(*name_)  <<endl ; // we have to change the 5 here so when it actually increases
-        if (!codel || is_print || is_var_assign || is_if || is_var_loop||(is_switch&&!is_expr)){
-            os << "ind" << endl ;
-            codel = true;
+        if(!is_adress_type) {
+            os << "ldc " << ST.find(*name_) << endl;
+            // we have to change the 5 here so when it actually increases
+            if (!codel || is_print || is_var_assign || is_if || is_var_loop || (is_switch && !is_expr)) {
+                os << "ind" << endl;
+                codel = true;
+            }
         }
     }
     virtual Object * clone () const { return new IdeType(*this);}
@@ -1289,7 +1293,9 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(type_);
+        is_adress_type = true;
         type_->pcodegen(os);
+        is_adress_type = false;
     }
     virtual Object * clone () const { return new AddressType(*this);}
 

@@ -40,6 +40,7 @@ bool is_unary = false;
 bool was_expr = false;
 bool is_var_assign = false;
 bool is_var_loop =false;
+bool is_adress_type = false;
 SymbolTable ST;
 bool is_equal = false;
 void writeAST(Object* r, fstream& file)
