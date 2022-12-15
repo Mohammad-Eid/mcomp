@@ -111,6 +111,7 @@ class Object {
 public:
     virtual void print (ostream& os) = 0;
     virtual string getType() {return " ";};
+    virtual int getSize(){return 1;};
     virtual void pcodegen(ostream& os) = 0;
     virtual Object * clone () const {return NULL;}
     virtual ~Object () {}
@@ -1144,6 +1145,9 @@ public:
     string getType(){
         return "SimpleType";
     }
+    int getSize(){
+        return 1;
+    }
     void pcodegen(ostream& os) {
     }
     virtual Object * clone () const { return new SimpleType(*this);}
@@ -1173,6 +1177,9 @@ public:
     }
     string getType(){
         return "IdeType";
+    }
+    int getSize(){
+        return 1;
     }
     void pcodegen(ostream& os) {
         is_var =true;
@@ -1208,11 +1215,13 @@ public :
     string getType(){
         return "ArrayType";
     }
-
     int getSize(){
-    int size=1;
-    size = up_-low_;
+        int size = up_ - low_ +1 ;
+        size *= type_->getSize();
+        return size;
     }
+
+
     void pcodegen(ostream& os) {
         assert(type_);
         type_->pcodegen(os);
@@ -1243,6 +1252,9 @@ public :
     }
     string getType(){
         return "RecordType";
+    }
+    int getSize(){
+        return 1;
     }
     void pcodegen(ostream& os) {
         assert(record_list_);
@@ -1314,13 +1326,20 @@ public:
     void pcodegen(ostream& os) {
         assert(type_);
         int size=1;
+        int current_size=1;
 
         if(type_->getType()=="ArrayType"){
-            
+            size = type_->getSize();
+        }
+        if(type_->getType()=="RecordType"){
+            current_size = stacksize;
         }
         type_->pcodegen(os);
 
-        if(ST.insert(*name_,type_->getType(),stacksize,1)){
+        if(type_->getType()=="RecordType"){
+            size = stacksize-current_size;
+        }
+        if(ST.insert(*name_,type_->getType(),stacksize,size)){
             if(type_->getType()!="RecordType"){
                 stacksize+=size;
             }
