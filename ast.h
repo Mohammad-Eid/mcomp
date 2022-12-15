@@ -190,6 +190,9 @@ public:
         while (start != NULL) {
 
             if (start->identifier == id) {
+                if(start->type == "AddressType") {
+                    return this->sizeFind(start->ptr);
+                }
                 return start->size;
             }
 
@@ -1399,8 +1402,9 @@ public:
 
 
         if(type_->getType() == "AddressType"){
-            ST.insert(*name_, type_->getType(), stacksize, size, type_->getName());
 
+            ST.insert(*name_, type_->getType(), stacksize, size, type_->getName());
+            stacksize++;
         }else if(ST.insert(*name_, type_->getType(), stacksize, size, "")){
             if(type_->getType()!="RecordType"){
                 stacksize+=size;
@@ -1427,6 +1431,9 @@ public :
         type_ = p.type_->clone();
         name_ = new string(*p.name_);
     }
+    string getName(){
+        return *name_;
+        }
 
     virtual ~Parameter () {
         if (type_) delete type_;
@@ -1534,6 +1541,9 @@ public :
         formal_list_ = fd.formal_list_->clone();
         name_ = new string(*fd.name_);
     }
+    string getName(){
+        return *name_;
+    }
 
     void print (ostream& os) {
         os<<"Node name : FunctionDeclaration. Func name is: "<<*name_<<endl;
@@ -1584,7 +1594,9 @@ public :
         formal_list_ = pd.formal_list_->clone();
         name_ = new string(*pd.name_);
     }
-
+    string getName(){
+        return *name_;
+    }
     void print (ostream& os) {
         os<<"Node name : ProcedureDeclaration. Proc name is: "<<*name_<<endl;
         assert(block_);
@@ -1700,6 +1712,10 @@ public :
     virtual ~Program () {
         if (block_) delete block_;
         delete name_;
+    }
+
+    string getName(){
+        return *name_;
     }
 
     void print (ostream& os) {
