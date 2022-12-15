@@ -102,7 +102,7 @@ extern bool is_print;
 extern bool is_unary;
 extern bool is_var_assign;
 extern bool is_var_loop;
-extern bool is_adress_type;
+extern bool is_address_type;
 extern bool is_new;
 extern bool is_address_ref;
 /**
@@ -115,6 +115,7 @@ public:
     virtual void print (ostream& os) = 0;
     virtual string getType() {return " ";};
     virtual int getSize(){return 1;};
+    virtual string getName(){ return ""; }
     virtual void pcodegen(ostream& os) = 0;
     virtual Object * clone () const {return NULL;}
     virtual ~Object () {}
@@ -1204,6 +1205,10 @@ public:
         name_ = new string(*s.name_);
     }
 
+    string getName(){
+        return  *name_;
+    }
+
     void print (ostream& os) {
         os<<"Node name : IdeType"<<endl;
     }
@@ -1215,7 +1220,7 @@ public:
     }
     void pcodegen(ostream& os) {
         is_var =true;
-        if(!is_adress_type) {
+        if(!is_address_type) {
             os << "ldc " << ST.find(*name_) << endl;
             // we have to change the 5 here so when it actually increases
             if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop || (is_switch && !is_expr) || is_address_ref) {
@@ -1331,13 +1336,16 @@ public :
         type_->print(os);
     }
     string getType(){
-        return "AdressType";
+        return "AddressType";
     }
+    string getName(){
+        return  type_->getName();
+      }
     void pcodegen(ostream& os) {
         assert(type_);
-        is_adress_type = true;
+        is_address_type = true;
         type_->pcodegen(os);
-        is_adress_type = false;
+        is_address_type = false;
     }
     virtual Object * clone () const { return new AddressType(*this);}
 
@@ -1386,6 +1394,10 @@ public:
 
         if(type_->getType()=="RecordType"){
             size = stacksize-current_size;
+        }
+        string str = "";
+        if(type_->getType() == "AddressType"){
+          str =  type_->getName();
         }
         if(ST.insert(*name_,type_->getType(),stacksize,size)){
             if(type_->getType()!="RecordType"){
