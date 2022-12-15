@@ -125,7 +125,7 @@ public:
 class Variable {
 
     /* Think! what does a Variable contain? */
-    string identifier, type;
+    string identifier, type, ptr;
     int address,size;
     Variable* next;
 
@@ -135,12 +135,13 @@ public:
         next = NULL;
     }
 
-    Variable(string key,  string type, int address,int size)
+    Variable(string key, string type, int address, int size, string ptr)
     {
         this->identifier = key;
         this->size = size;
         this->type = type;
         this->address = address;
+        this->ptr = ptr;
         next = NULL;
     }
     friend class SymbolTable;
@@ -199,13 +200,13 @@ public:
     }
 
     // Function to insert an identifier
-    bool insert(string id,  string type, int address,int size)
+    bool insert(string id, string type, int address, int size, string ptr)
     {
         if (find(id) != -1)
             return false;
 
         int index = hashf(id);
-        Variable* p = new Variable(id, type, address, size);
+        Variable* p = new Variable(id, type, address, size, ptr);
 
         if (head[index] == NULL) {
             head[index] = p;
@@ -1395,11 +1396,12 @@ public:
         if(type_->getType()=="RecordType"){
             size = stacksize-current_size;
         }
-        string str = "";
+
+
         if(type_->getType() == "AddressType"){
-          str =  type_->getName();
-        }
-        if(ST.insert(*name_,type_->getType(),stacksize,size)){
+            ST.insert(*name_, type_->getType(), stacksize, size, type_->getName());
+
+        }else if(ST.insert(*name_, type_->getType(), stacksize, size, "")){
             if(type_->getType()!="RecordType"){
                 stacksize+=size;
             }
