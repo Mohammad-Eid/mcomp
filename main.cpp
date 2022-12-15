@@ -41,6 +41,8 @@ bool was_expr = false;
 bool is_var_assign = false;
 bool is_var_loop =false;
 bool is_adress_type = false;
+bool is_new = false;
+bool is_address_ref = false;
 SymbolTable ST;
 bool is_equal = false;
 void writeAST(Object* r, fstream& file)
@@ -97,7 +99,7 @@ int main(int argc, char* argv[])
     fstream treeFile(TREE_OUTPUT_TEXT_FILE, ios::out);
     fstream pcodeFile(OUTPUT_CODE_TEXT, ios::out);
     treeFile << AST_FILE_HEADER << endl;
-    pcodeFile << AST_FILE_HEADER << endl;
+//    pcodeFile << AST_FILE_HEADER << endl;
     writeAST(theProgram, treeFile);
     Pcode(theProgram, pcodeFile);
     treeFile.close();

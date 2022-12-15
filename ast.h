@@ -103,6 +103,8 @@ extern bool is_unary;
 extern bool is_var_assign;
 extern bool is_var_loop;
 extern bool is_adress_type;
+extern bool is_new;
+extern bool is_address_ref;
 /**
  * classes
  */
@@ -168,6 +170,25 @@ public:
 
             if (start->identifier == id) {
                 return start->address;
+            }
+
+            start = start->next;
+        }
+
+        return -1; // not found
+    }
+
+    int sizeFind(string id){
+        int index = hashf(id);
+        Variable* start = head[index];
+
+        if (start == NULL)
+            return -1;
+
+        while (start != NULL) {
+
+            if (start->identifier == id) {
+                return start->size;
             }
 
             start = start->next;
@@ -632,7 +653,11 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(var_);
+        is_address_ref = true;
         var_->pcodegen(os);
+        is_address_ref = false;
+
+
     }
     virtual Object * clone () { return new AddressRef(*this);}
 
@@ -661,8 +686,14 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(var_);
+        is_new = true;
         var_->pcodegen(os);
+//            os<< "ldc" <<"   new_size_should_be_here"<<endl;
+//            os << "new"<<endl;
+
+        is_new = false;
     }
+
     virtual Object * clone () { return new NewStatement(*this);}
 
 private:
@@ -1187,13 +1218,22 @@ public:
         if(!is_adress_type) {
             os << "ldc " << ST.find(*name_) << endl;
             // we have to change the 5 here so when it actually increases
-            if (!codel || is_print || is_var_assign || is_if || is_var_loop || (is_switch && !is_expr)) {
+            if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop || (is_switch && !is_expr) || is_address_ref) {
                 os << "ind" << endl;
                 codel = true;
             }
 
-
+            if(is_new && !is_address_ref) {
+                os << "ldc"  <<" "<< ST.sizeFind(*name_)<< endl;
+                os << "new" << endl;
+            }
         }
+
+
+//        if(is_new){
+//            os << "ldc " << ST.find(*name_) << endl;
+//        }
+
     }
     virtual Object * clone () const { return new IdeType(*this);}
 
