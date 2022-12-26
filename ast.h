@@ -106,6 +106,8 @@ extern bool is_var_loop;
 extern bool is_address_type;
 extern bool is_new;
 extern bool is_address_ref;
+extern bool is_intern ;
+extern string Extern_name ;
 /**
  * classes
  */
@@ -279,6 +281,28 @@ public:
 
         return -1; // not found
     }
+    int findType(string id)
+    {
+        int index = hashf(id);
+        Variable* start = head[index];
+
+        if (start == NULL)
+            return -1;
+
+        while (start != NULL) {
+
+            if (start->identifier == id) {
+                if(start->type == "AddressType") {
+                    return this->findType(start->ptr);
+                }
+                return start->address;
+            }
+            start = start->next;
+        }
+
+        return -1; // not found
+    }
+
 
     int sizeFind(string id){
         int index = hashf(id);
@@ -731,7 +755,10 @@ public :
     void pcodegen(ostream& os) {
         assert(varExt_ && varIn_);
         varExt_->pcodegen(os);
+        Extern_name = varExt_->getName();
+        is_intern = true;
         varIn_->pcodegen(os);
+        is_intern = false;
     }
     virtual Object * clone () const { return new RecordRef(*this);}
 
@@ -750,6 +777,10 @@ public :
     virtual ~AddressRef(){
         if (var_) delete var_;
     }
+
+    string getName(){
+    return var_->getName();
+}
 
     void print (ostream& os) {
         os<<"Node name : AddressRef"<<endl;
@@ -1325,7 +1356,15 @@ public:
     void pcodegen(ostream& os) {
         is_var =true;
         if(!is_address_type) {
-            os << "ldc " << ST.find(*name_) << endl;
+            if(is_intern){
+                int a = ST.find(*name_);
+                int b =ST.findType(Extern_name);
+                    os << "inc " << ST.find(*name_)-ST.findType(Extern_name) << endl;
+            }
+            else{
+                os << "ldc " << ST.find(*name_) << endl;
+            }
+
             // we have to change the 5 here so when it actually increases
             if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop || (is_switch && !is_expr) || is_address_ref) {
                 os << "ind" << endl;
@@ -1509,17 +1548,12 @@ public:
             current_size = stacksize;
         }
         type_->pcodegen(os);
-
+        int address = stacksize;
         if(type_->getType()=="RecordType"){
             size = stacksize-current_size;
+            address = stacksize -size;
         }
-
-
-        if(type_->getType() == "AddressType"){
-
-            ST.insert(*name_, type_->getType(), stacksize, size, type_->getName());
-            stacksize++;
-        }else if(ST.insert(*name_, type_->getType(), stacksize, size, "")){
+        if(ST.insert(*name_,type_->getType(),address,size,type_->getName())){
             if(type_->getType()!="RecordType"){
                 stacksize+=size;
             }

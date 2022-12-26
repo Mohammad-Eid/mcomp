@@ -43,6 +43,8 @@ bool is_var_loop =false;
 bool is_address_type = false;
 bool is_new = false;
 bool is_address_ref = false;
+bool is_intern = false;
+string Extern_name;
 SymbolTable ST;
 ArraysTable ArraysST;
 bool is_equal = false;
