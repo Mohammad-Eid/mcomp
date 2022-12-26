@@ -108,6 +108,9 @@ extern bool is_new;
 extern bool is_address_ref;
 extern bool is_intern ;
 extern string Extern_name ;
+extern int dim_counter;
+extern bool is_dim;
+extern string ActiveArray;
 /**
  * classes
  */
@@ -166,6 +169,7 @@ public:
 
     ArrayClass(string name_){
         this->name = name_;
+        dim = 1;
     }
 
     const string &getName() const;
@@ -176,14 +180,56 @@ public:
 
     void setDim(int dim);
 
-     vector<int> &getArrayD() ;
 
     void setArrayD(const vector<int> &arrayD);
 
-     vector<int> &getArrayL() ;
 
     void setArrayL(const vector<int> &arrayL);
 
+    int getSubpart(){
+        dim = array_d.size();
+        int total=0;
+        for (int i =0; i < dim ; i++  ){
+            int sum1 =1;
+            for (int j = i+1; j< dim ;j++){
+                sum1 = sum1 * array_d[j];
+            }
+            total += array_l[i] * sum1;
+
+        }
+        return total;
+    }
+    int getIxaAtIndex(int index){
+        int total = 1;
+        //dim = array_d.size();
+        for(int i=index+1; i < dim ; i++){
+            total *= array_d[i-1];
+        }
+        return total;
+
+    }
+
+
+    string getName()  {
+        return name;
+    }
+
+    void setD(int d){
+        array_d.push_back(d);
+        dim++;
+    }
+
+    void setL(int L){
+        array_l.push_back(L);
+    }
+    vector<int> getArrayD()  {
+        return array_d;
+    }
+
+
+    vector<int> getArrayL()  {
+        return array_l;
+    }
 
     friend class ArraysTable;
 
@@ -214,39 +260,9 @@ class ArraysTable{
         ArraysTable::arraysVector = arraysVector;
     }
 
+
 };
 
-const string &ArrayClass::getName() const {
-    return name;
-}
-
-void ArrayClass::setName(const string &name) {
-    ArrayClass::name = name;
-}
-
-int ArrayClass::getDim() const {
-    return dim;
-}
-
-void ArrayClass::setDim(int dim) {
-    ArrayClass::dim = dim;
-}
-
- vector<int> &ArrayClass::getArrayD()  {
-    return array_d;
-}
-
-void ArrayClass::setArrayD(const vector<int> &arrayD) {
-    array_d = arrayD;
-}
-
-vector<int> &ArrayClass::getArrayL()  {
-    return array_l;
-}
-
-void ArrayClass::setArrayL(const vector<int> &arrayL) {
-    array_l = arrayL;
-}
 
 
 
@@ -610,6 +626,7 @@ public:
     void pcodegen(ostream& os) {
         assert(exp_);
         exp_->pcodegen(os);
+        dim_counter++;
         if (dim_) {
             dim_->pcodegen(os);
         }
@@ -639,7 +656,14 @@ public:
         }
         if(!left_flag || !is_add || ((is_print || is_assign) && !is_expr )  || is_unary || (is_switch&&!is_expr)) {
 
-            os << "ldc " << i_ << endl;
+            if(is_dim){
+                int temp = ArraysST.find(ActiveArray).getIxaAtIndex(dim_counter);
+                os << "ldc " << i_ << endl;
+                os << "ixa " << temp << endl;
+            }else{
+                os << "ldc " << i_ << endl;
+            }
+
 
         }
         inc_val = i_;
@@ -670,7 +694,6 @@ public:
 
         }
         inc_val = r_;
-//        os<< "ldc "<<std::fixed << std::setprecision(1)<<r_<<endl;
     }
     virtual Object * clone () const { return new RealConst(*this);}
 
@@ -724,7 +747,13 @@ public :
     void pcodegen(ostream& os) {
         assert(var_ && dim_);
         var_->pcodegen(os);
+        ActiveArray = var_->getName();
+        dim_counter = 1;
+        is_dim =true;
         dim_->pcodegen(os);
+        os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;
+        is_dim = false;
+        dim_counter = 1;
     }
     virtual Object * clone () const { return new ArrayRef(*this);}
 
@@ -1378,9 +1407,6 @@ public:
         }
 
 
-//        if(is_new){
-//            os << "ldc " << ST.find(*name_) << endl;
-//        }
 
     }
     virtual Object * clone () const { return new IdeType(*this);}
@@ -1409,6 +1435,9 @@ public :
     string getType(){
         return "ArrayType";
     }
+    string getName(){
+    return type_->getName();
+}
     int getSize(){
         int size = up_ - low_ +1 ;
         size *= type_->getSize();
@@ -1418,9 +1447,9 @@ public :
     void setArraySizes(string name_){
 
             int tmp = up_-low_+1;
-            ArraysST.find(name_).getArrayD().push_back(tmp);
+            ArraysST.find(name_).setD(tmp);
 
-            ArraysST.find(name_).getArrayL().push_back(low_);
+            ArraysST.find(name_).setL(low_);
 
             if(getType() != "SimpleType") {
                 type_->setArraySizes(name_);
@@ -1540,8 +1569,9 @@ public:
         int current_size=1;
 
         if(type_->getType()=="ArrayType"){
+            ArraysST.getArraysVector().push_back(ArrayClass(*name_));
             size = type_->getSize();
-
+            type_->setArraySizes(*name_);
 
         }
         if(type_->getType()=="RecordType"){
@@ -1557,6 +1587,7 @@ public:
             if(type_->getType()!="RecordType"){
                 stacksize+=size;
             }
+
         }
 
         ST.print();
