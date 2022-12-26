@@ -44,6 +44,7 @@ bool is_address_type = false;
 bool is_new = false;
 bool is_address_ref = false;
 SymbolTable ST;
+ArraysTable ArraysST;
 bool is_equal = false;
 void writeAST(Object* r, fstream& file)
 {

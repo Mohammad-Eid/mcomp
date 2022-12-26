@@ -77,6 +77,7 @@
 #include <assert.h>
 #include <string>
 #include <iomanip>
+#include <vector>
 extern int loop_counter;
 extern int if_counter;
 extern int stacksize;
@@ -114,7 +115,8 @@ class Object {
 public:
     virtual void print (ostream& os) = 0;
     virtual string getType() {return " ";};
-    virtual int getSize(){return 1;};
+    virtual int getSize(){return 1;}
+    virtual void setArraySizes(string name_){}
     virtual string getName(){ return ""; }
     virtual void pcodegen(ostream& os) = 0;
     virtual Object * clone () const {return NULL;}
@@ -147,6 +149,104 @@ public:
     friend class SymbolTable;
 
 };
+
+
+class ArrayClass {
+
+    /* Think! what does a Variable contain? */
+    string name;
+    int dim;
+    vector <int> array_d;
+    vector <int> array_l;
+
+public:
+
+
+    ArrayClass(string name_){
+        this->name = name_;
+    }
+
+    const string &getName() const;
+
+    void setName(const string &name);
+
+    int getDim() const;
+
+    void setDim(int dim);
+
+     vector<int> &getArrayD() ;
+
+    void setArrayD(const vector<int> &arrayD);
+
+     vector<int> &getArrayL() ;
+
+    void setArrayL(const vector<int> &arrayL);
+
+
+    friend class ArraysTable;
+
+
+};
+
+class ArraysTable{
+
+    vector <ArrayClass> arraysVector;
+
+    public:
+
+
+    ArrayClass& find(const string& name_){
+
+       for(int i=0; i < arraysVector.size(); i++){
+           if(arraysVector[i].getName() == name_){
+               return arraysVector[i];
+           }
+       }
+    }
+
+     vector<ArrayClass> &getArraysVector()  {
+        return arraysVector;
+    }
+
+    void setArraysVector(const vector<ArrayClass> &arraysVector) {
+        ArraysTable::arraysVector = arraysVector;
+    }
+
+};
+
+const string &ArrayClass::getName() const {
+    return name;
+}
+
+void ArrayClass::setName(const string &name) {
+    ArrayClass::name = name;
+}
+
+int ArrayClass::getDim() const {
+    return dim;
+}
+
+void ArrayClass::setDim(int dim) {
+    ArrayClass::dim = dim;
+}
+
+ vector<int> &ArrayClass::getArrayD()  {
+    return array_d;
+}
+
+void ArrayClass::setArrayD(const vector<int> &arrayD) {
+    array_d = arrayD;
+}
+
+vector<int> &ArrayClass::getArrayL()  {
+    return array_l;
+}
+
+void ArrayClass::setArrayL(const vector<int> &arrayL) {
+    array_l = arrayL;
+}
+
+
 
 class SymbolTable {
     /* Think! what can you add to  symbol_table */
@@ -256,7 +356,7 @@ public:
 
 };
 extern SymbolTable ST ;
-
+extern  ArraysTable ArraysST;
 
 
 class Expr : public Object {
@@ -1276,6 +1376,18 @@ public :
         return size;
     }
 
+    void setArraySizes(string name_){
+
+            int tmp = up_-low_+1;
+            ArraysST.find(name_).getArrayD().push_back(tmp);
+
+            ArraysST.find(name_).getArrayL().push_back(low_);
+
+            if(getType() != "SimpleType") {
+                type_->setArraySizes(name_);
+            }
+
+        }
 
     void pcodegen(ostream& os) {
         assert(type_);
@@ -1390,6 +1502,8 @@ public:
 
         if(type_->getType()=="ArrayType"){
             size = type_->getSize();
+
+
         }
         if(type_->getType()=="RecordType"){
             current_size = stacksize;
