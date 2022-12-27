@@ -195,7 +195,7 @@ public:
         for (int i =0; i < dim ; i++  ){
             int sum1 =1;
             for (int j = i+1; j< dim ;j++){
-                sum1 = sum1 * array_d[j];
+                sum1 = typeSize * sum1 * array_d[j];
             }
             total += array_l[i] * sum1;
 
@@ -208,8 +208,15 @@ public:
         for(int i=index+1; i < dim ; i++){
             total *= array_d[i-1];
         }
-        return total;
+        return total * typeSize;
 
+    }
+    void setFactor(int factor){
+        typeSize = factor;
+    }
+
+    int getFactor(){
+        return typeSize;
     }
 
 
@@ -763,7 +770,7 @@ public :
         dim_counter = 1;
         is_dim =true;
         dim_->pcodegen(os);
-        os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;//dec 4lt
+//        os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;//dec 4lt
         is_dim = false;
         dim_counter = 1;
     }
@@ -1590,7 +1597,9 @@ public:
 
         if(type_->getType()=="ArrayType"){
             ArraysST.getArraysVector().push_back(ArrayClass(*name_));
-            size = type_->getFactor()*type_->getSize();
+            int typeSize = type_->getFactor();
+            ArraysST.find(*name_).setFactor(typeSize);
+            size = typeSize*type_->getSize();
             type_->setArraySizes(*name_);
 
         }
