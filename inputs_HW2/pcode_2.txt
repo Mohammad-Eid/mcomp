@@ -9,6 +9,6 @@ ixa 7
 dec 91
 ldc 4
 ixa 1
-dec 21
+dec 3
 ldc 6
 sto

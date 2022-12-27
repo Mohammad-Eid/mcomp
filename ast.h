@@ -124,6 +124,7 @@ public:
     virtual int getSize(){return 1;}
     virtual void setArraySizes(string name_){}
     virtual string getName(){ return ""; }
+    virtual string getInner(){return "";}
     virtual int getFactor(){return 1;}
     virtual void pcodegen(ostream& os) = 0;
     virtual Object * clone () const {return NULL;}
@@ -164,6 +165,7 @@ class ArrayClass {
     string name;
     int dim;
     int typeSize;
+    string innerType;
     vector <int> array_d;
     vector <int> array_l;
 
@@ -172,14 +174,17 @@ public:
 
     ArrayClass(string name_){
         this->name = name_;
-        dim = 1;
+        dim = 0;
+        innerType = "SimpleType";
     }
 
     const string &getName() const;
 
     void setName(const string &name);
 
-    int getDim() const;
+    int getDim(){
+        return dim;
+    }
 
     void setDim(int dim);
 
@@ -195,17 +200,25 @@ public:
         for (int i =0; i < dim ; i++  ){
             int sum1 =1;
             for (int j = i+1; j< dim ;j++){
-                sum1 = typeSize * sum1 * array_d[j];
+                sum1 =  sum1 * array_d[j];
             }
-            total += array_l[i] * sum1;
+            total += array_l[i] *typeSize * sum1;
 
         }
         return total;
     }
+
+    void setInnerType(string inner_name){
+        innerType=inner_name;
+    }
+    string getInner(){
+        return innerType;
+    }
     int getIxaAtIndex(int index){
         int total = 1;
+
         //dim = array_d.size();
-        for(int i=index+1; i < dim ; i++){
+        for(int i=index+1; i < dim+1 ; i++){//check if dim or dim +1
             total *= array_d[i-1];
         }
         return total * typeSize;
@@ -636,10 +649,19 @@ public:
     void pcodegen(ostream& os) {
         assert(exp_);
         exp_->pcodegen(os);
+        int counterBackup = dim_counter;
+        string arrayBackup = ActiveArray;
+        if(dim_counter == ArraysST.find(ActiveArray).getDim()){
+            os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;
+            ActiveArray = ArraysST.find(ActiveArray).getInner();
+            dim_counter = 0;
+        }
         dim_counter++;
         if (dim_) {
             dim_->pcodegen(os);
         }
+//        dim_counter = counterBackup;
+        //os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;//dec 4lt
     }
     virtual Object * clone () const { return new Dim(*this);}
 
@@ -1468,6 +1490,13 @@ public :
         }
         else
             return 1;
+    }
+
+    string getInner(){
+        if (type_->getType() != "SimpleType"){
+            return type_->getName();
+        }
+        else return "SimpleType";
 }
 
     void setArraySizes(string name_){
@@ -1598,6 +1627,7 @@ public:
         if(type_->getType()=="ArrayType"){
             ArraysST.getArraysVector().push_back(ArrayClass(*name_));
             int typeSize = type_->getFactor();
+            ArraysST.find(*name_).setInnerType(type_->getInner());
             ArraysST.find(*name_).setFactor(typeSize);
             size = typeSize*type_->getSize();
             type_->setArraySizes(*name_);
