@@ -46,6 +46,7 @@ bool is_address_ref = false;
 bool is_intern = false;
 int dim_counter = 0;
 bool is_dim = false;
+bool is_var_declaration = false;
 string Extern_name;
 string ActiveArray;
 SymbolTable ST;

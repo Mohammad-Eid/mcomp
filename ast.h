@@ -107,6 +107,7 @@ extern bool is_address_type;
 extern bool is_new;
 extern bool is_address_ref;
 extern bool is_intern ;
+extern bool is_var_declaration;
 extern string Extern_name ;
 extern int dim_counter;
 extern bool is_dim;
@@ -123,6 +124,7 @@ public:
     virtual int getSize(){return 1;}
     virtual void setArraySizes(string name_){}
     virtual string getName(){ return ""; }
+    virtual int getFactor(){return 1;}
     virtual void pcodegen(ostream& os) = 0;
     virtual Object * clone () const {return NULL;}
     virtual ~Object () {}
@@ -161,6 +163,7 @@ class ArrayClass {
     /* Think! what does a Variable contain? */
     string name;
     int dim;
+    int typeSize;
     vector <int> array_d;
     vector <int> array_l;
 
@@ -651,20 +654,25 @@ public:
     }
     void pcodegen(ostream& os) {
         is_real_const=false;
-        if(left_flag && ((is_equal|| is_assign || is_add) && is_expr) ){
-            inc_flag = true;
-        }
-        if(!left_flag || !is_add || ((is_print || is_assign) && !is_expr )  || is_unary || (is_switch&&!is_expr)) {
-
-            if(is_dim){
-                int temp = ArraysST.find(ActiveArray).getIxaAtIndex(dim_counter);
-                os << "ldc " << i_ << endl;
-                os << "ixa " << temp << endl;
-            }else{
-                os << "ldc " << i_ << endl;
+        if(!is_var_declaration) {
+            if (left_flag && ((is_equal || is_assign || is_add) && is_expr)) {
+                inc_flag = true;
             }
+            if (!left_flag || !is_add ||
+                ((is_print || is_assign) && !is_expr) || is_unary ||
+                (is_switch && !is_expr)) {
+
+                if (is_dim) {
+                    int temp = ArraysST.find(ActiveArray).getIxaAtIndex(
+                            dim_counter);
+                    os << "ldc " << i_ << endl;
+                    os << "ixa " << temp << endl;
+                } else {
+                    os << "ldc " << i_ << endl;
+                }
 
 
+            }
         }
         inc_val = i_;
 //           is_var =false;
@@ -685,15 +693,19 @@ public:
     }
     void pcodegen(ostream& os) {
         is_real_const = true;
-        if(left_flag && ((is_equal|| is_assign || is_add) && is_expr) ){
-            inc_flag = true;
-        }
-        if(!left_flag || !is_add || ((is_print || is_assign) && !is_expr ) || is_unary) {
+        if(!is_var_declaration) {
+            if (left_flag && ((is_equal || is_assign || is_add) && is_expr)) {
+                inc_flag = true;
+            }
+            if (!left_flag || !is_add ||
+                ((is_print || is_assign) && !is_expr) || is_unary) {
 
-            os<< "ldc "<<std::fixed << std::setprecision(1)<<r_<<endl;
+                os << "ldc " << std::fixed << std::setprecision(1) << r_
+                   << endl;
 
+            }
+            inc_val = r_;
         }
-        inc_val = r_;
     }
     virtual Object * clone () const { return new RealConst(*this);}
 
@@ -751,7 +763,7 @@ public :
         dim_counter = 1;
         is_dim =true;
         dim_->pcodegen(os);
-        os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;
+        os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;//dec 4lt
         is_dim = false;
         dim_counter = 1;
     }
@@ -1384,7 +1396,7 @@ public:
     }
     void pcodegen(ostream& os) {
         is_var =true;
-        if(!is_address_type) {
+        if(!is_address_type && !is_var_declaration) {
             if(is_intern){
                 int a = ST.find(*name_);
                 int b =ST.findType(Extern_name);
@@ -1443,6 +1455,13 @@ public :
         size *= type_->getSize();
         return size;
     }
+    int getFactor(){
+        if (type_->getType() != "SimpleType"){
+            return ST.sizeFind(type_->getName());
+        }
+        else
+            return 1;
+}
 
     void setArraySizes(string name_){
 
@@ -1564,13 +1583,14 @@ public:
         type_->print(os);
     }
     void pcodegen(ostream& os) {
+        is_var_declaration =true;
         assert(type_);
         int size=1;
         int current_size=1;
 
         if(type_->getType()=="ArrayType"){
             ArraysST.getArraysVector().push_back(ArrayClass(*name_));
-            size = type_->getSize();
+            size = type_->getFactor()*type_->getSize();
             type_->setArraySizes(*name_);
 
         }
@@ -1591,6 +1611,7 @@ public:
         }
 
         ST.print();
+        is_var_declaration =false;
     }
     virtual Object * clone () const { return new VariableDeclaration(*this);}
 
