@@ -176,6 +176,7 @@ public:
         this->name = name_;
         dim = 0;
         innerType = "SimpleType";
+        typeSize = 1 ;
     }
 
     const string &getName() const;
@@ -1486,7 +1487,13 @@ public :
     }
     int getFactor(){
         if (type_->getType() != "SimpleType"){
-            return ST.sizeFind(type_->getName());
+           int temp = ST.sizeFind(type_->getName());
+           if (temp == -1){
+               return 1;
+           }
+           else{
+               return temp;
+           }
         }
         else
             return 1;
