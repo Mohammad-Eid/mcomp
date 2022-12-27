@@ -111,6 +111,7 @@ extern bool is_var_declaration;
 extern string Extern_name ;
 extern int dim_counter;
 extern bool is_dim;
+extern int inner_record_counter;
 extern string ActiveArray;
 /**
  * classes
@@ -136,7 +137,7 @@ class Variable {
 
     /* Think! what does a Variable contain? */
     string identifier, type, ptr;
-    int address,size;
+    int address,size,inc;
     Variable* next;
 
 public:
@@ -152,6 +153,7 @@ public:
         this->type = type;
         this->address = address;
         this->ptr = ptr;
+        this->inc =0;
         next = NULL;
     }
     friend class SymbolTable;
@@ -321,6 +323,27 @@ public:
 
         return -1; // not found
     }
+
+    string findTypeByName(string id)
+    {
+        int index = hashf(id);
+        Variable* start = head[index];
+
+        if (start == NULL)
+            return "-1";
+
+        while (start != NULL) {
+
+            if (start->identifier == id) {
+                return start->type;
+            }
+
+            start = start->next;
+        }
+
+        return "-1"; // not found
+    }
+
     int findType(string id)
     {
         int index = hashf(id);
@@ -332,10 +355,29 @@ public:
         while (start != NULL) {
 
             if (start->identifier == id) {
-                if(start->type == "AddressType") {
+                if(start->type == "AddressType"||start->type == "RecordType2") {
                     return this->findType(start->ptr);
                 }
                 return start->address;
+            }
+            start = start->next;
+        }
+
+        return -1; // not found
+    }
+    int findInc(string id)
+    {
+        int index = hashf(id);
+        Variable* start = head[index];
+
+        if (start == NULL)
+            return -1;
+
+        while (start != NULL) {
+
+            if (start->identifier == id) {
+
+                return start->inc;
             }
             start = start->next;
         }
@@ -1419,7 +1461,9 @@ public:
         os<<"Node name : IdeType"<<endl;
     }
     string getType(){
-        return "IdeType";
+
+        return ST.findTypeByName(*name_)+"2";
+        //return "IdeType";
     }
     int getSize(){
         return 1;
@@ -1430,7 +1474,8 @@ public:
             if(is_intern){
                 int a = ST.find(*name_);
                 int b =ST.findType(Extern_name);
-                    os << "inc " << ST.find(*name_)-ST.findType(Extern_name) << endl;
+                os << "inc " << ST.find(*name_)-ST.findType(Extern_name) << endl;
+//                os << "inc " << ST.findInc(*name_)<< endl;
             }
             else{
                 os << "ldc " << ST.find(*name_) << endl;
@@ -1630,6 +1675,9 @@ public:
         assert(type_);
         int size=1;
         int current_size=1;
+        if(type_->getType()=="RecordType"){
+            inner_record_counter = 0;
+        }
 
         if(type_->getType()=="ArrayType"){
             ArraysST.getArraysVector().push_back(ArrayClass(*name_));
@@ -1643,17 +1691,31 @@ public:
         if(type_->getType()=="RecordType"){
             current_size = stacksize;
         }
+        int backup = inner_record_counter;
         type_->pcodegen(os);
+        inner_record_counter = backup;
         int address = stacksize;
         if(type_->getType()=="RecordType"){
-            size = stacksize-current_size;
-            address = stacksize -size;
+            if(ST.findTypeByName(type_->getName())=="RecordType"){
+                size = ST.sizeFind(type_->getName());
+                stacksize += size;
+            }
+            else {
+                size = stacksize - current_size;
+                address = stacksize - size;
+            }
+        }
+        if(type_->getType()=="RecordType2"){
+
+                size = ST.sizeFind(type_->getName());
+                stacksize += size;
+
         }
         if(ST.insert(*name_,type_->getType(),address,size,type_->getName())){
-            if(type_->getType()!="RecordType"){
+            if(type_->getType()!="RecordType"&&type_->getType()!="RecordType2"){
                 stacksize+=size;
             }
-
+            inner_record_counter=inner_record_counter+size;
         }
 
         ST.print();
