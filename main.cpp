@@ -44,14 +44,19 @@ bool is_address_type = false;
 bool is_new = false;
 bool is_address_ref = false;
 bool is_intern = false;
+bool is_record_type_var = false;
 int dim_counter = 0;
+string ActiveArray2= "";
 int inner_record_counter = 0 ;
 bool is_dim = false;
 bool is_var_declaration = false;
+vector<string> recordsPrintVector;
+string extern_name_main = "";
 string Extern_name;
 string ActiveArray;
 SymbolTable ST;
 ArraysTable ArraysST;
+RecordsTable RecordsST;
 bool is_equal = false;
 void writeAST(Object* r, fstream& file)
 {

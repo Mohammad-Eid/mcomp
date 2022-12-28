@@ -111,8 +111,11 @@ extern bool is_var_declaration;
 extern string Extern_name ;
 extern int dim_counter;
 extern bool is_dim;
-extern int inner_record_counter;
 extern string ActiveArray;
+extern bool is_record_type_var;
+extern string extern_name_main;
+extern vector<string> recordsPrintVector;
+extern string ActiveArray2;
 /**
  * classes
  */
@@ -137,7 +140,7 @@ class Variable {
 
     /* Think! what does a Variable contain? */
     string identifier, type, ptr;
-    int address,size,inc;
+    int address,size;
     Variable* next;
 
 public:
@@ -153,12 +156,13 @@ public:
         this->type = type;
         this->address = address;
         this->ptr = ptr;
-        this->inc =0;
         next = NULL;
     }
     friend class SymbolTable;
 
 };
+
+
 
 
 class ArrayClass {
@@ -170,7 +174,7 @@ class ArrayClass {
     string innerType;
     vector <int> array_d;
     vector <int> array_l;
-
+    int size;
 public:
 
 
@@ -179,11 +183,20 @@ public:
         dim = 0;
         innerType = "SimpleType";
         typeSize = 1 ;
+
     }
 
     const string &getName() const;
 
     void setName(const string &name);
+
+    int getSize() const {
+        return size;
+    }
+
+    void setSize(int size) {
+        ArrayClass::size = size;
+    }
 
     int getDim(){
         return dim;
@@ -266,19 +279,19 @@ class ArraysTable{
 
     vector <ArrayClass> arraysVector;
 
-    public:
+public:
 
 
     ArrayClass& find(const string& name_){
 
-       for(int i=0; i < arraysVector.size(); i++){
-           if(arraysVector[i].getName() == name_){
-               return arraysVector[i];
-           }
-       }
+        for(int i=0; i < arraysVector.size(); i++){
+            if(arraysVector[i].getName() == name_){
+                return arraysVector[i];
+            }
+        }
     }
 
-     vector<ArrayClass> &getArraysVector()  {
+    vector<ArrayClass> &getArraysVector()  {
         return arraysVector;
     }
 
@@ -289,8 +302,170 @@ class ArraysTable{
 
 };
 
+class RecordField{
+    string name;
+    string type;
+    // if is basic means it's not a record or an array
+    bool isBasic;
+    int size;
+    //if is basic false then we use this field if not is_array then it's a struct
+    bool is_array;
+
+public:
+
+    RecordField(const string &name, const string &type, bool isBasic, int addressInRecord, bool isArray)
+            : name(name), type(type),
+              isBasic(isBasic),
+              size(
+                                                                                                     addressInRecord) {}
+
+     string &getName()  {
+        return name;
+    }
+
+    void setName(const string &name) {
+        RecordField::name = name;
+    }
+
+     string &getType()  {
+        return type;
+    }
+
+    void setType(const string &type) {
+        RecordField::type = type;
+    }
+
+    bool isBasic1() {
+        return isBasic;
+    }
+
+    void setIsBasic(bool isBasic) {
+        RecordField::isBasic = isBasic;
+    }
+
+    int getSizeInRecord()  {
+        return size;
+    }
+
+    void setAddressInRecord(int addressInRecord) {
+        RecordField::size = addressInRecord;
+    }
+};
 
 
+class Record{
+    string name;
+    vector<RecordField> fieldsInRecord;
+    int size;
+
+public:
+    Record(const string &name ="", const vector<RecordField> &fieldsInRecord = vector<RecordField>(), int size = 0) : name(name),
+                                                                                      fieldsInRecord(fieldsInRecord),
+                                                                                      size(size) {}
+
+     string &getName() {
+        return name;
+    }
+
+    void setName(const string &name) {
+        Record::name = name;
+    }
+
+     vector<RecordField> &getFieldsInRecord(){
+        return fieldsInRecord;
+    }
+
+    void setFieldsInRecord(const vector<RecordField> &fieldsInRecord) {
+        Record::fieldsInRecord = fieldsInRecord;
+    }
+
+    int getSize(){
+        return size;
+    }
+
+    void setSize(int size) {
+        Record::size = size;
+    }
+
+    RecordField& getRecordFieldByName(string name_){
+        for(int i = 0; i < fieldsInRecord.size() ; i++){
+            if(fieldsInRecord[i].getName() == name_){
+                return fieldsInRecord[i];
+            }
+
+        }
+    }
+    int getFieldAddressInRecordByName(string name){
+
+        int address = 0;
+        for(int i =0; i < fieldsInRecord.size(); i++){
+            if(fieldsInRecord[i].getName() == name){
+                return  address;
+            }
+            address+= fieldsInRecord[i].getSizeInRecord();
+        }
+    }
+
+    int getRecordActualSize(){
+        int RecordSize =0 ;
+        for(int i =0; i < fieldsInRecord.size();i++){
+            RecordSize += fieldsInRecord[i].getSizeInRecord();
+        }
+        return RecordSize;
+    }
+
+    string getFieldTypeByName(string name){
+
+        for(int i =0; i < fieldsInRecord.size();i++){
+            if(fieldsInRecord[i].getName() == name){
+                return fieldsInRecord[i].getType();
+            }
+        }
+    }
+
+};
+
+
+class RecordsTable{
+    vector<Record> RecordsVector;
+public:
+    RecordsTable() = default;
+
+    RecordsTable(const vector<Record> &recordsVector) : RecordsVector(recordsVector) {}
+
+     vector<Record> &getRecordsVector() {
+        return RecordsVector;
+    }
+
+    void setRecordsVector(const vector<Record> &recordsVector) {
+        RecordsVector = recordsVector;
+    }
+
+    Record& getRecordByName(string name_){
+        for(int i = 0; i < RecordsVector.size(); i++){
+            if(RecordsVector[i].getName() == name_ ){
+                return RecordsVector[i];
+            }
+        }
+    }
+
+    int getAddressOfField(vector<string> vec){
+
+
+        if(vec.size() == 2){
+            return this->getRecordByName(vec[0]).getFieldAddressInRecordByName(vec[1]);
+        }
+        vector<string> tmp;
+        tmp.push_back(this->getRecordByName(vec[0]).getFieldTypeByName(vec[1]));
+        for(int i=2;i<vec.size();i++){
+            tmp.push_back(vec[i]);
+        }
+        return getAddressOfField(tmp);
+
+    }
+
+
+};
 
 class SymbolTable {
     /* Think! what can you add to  symbol_table */
@@ -304,6 +479,27 @@ public:
     }
 
     // Function to find an identifier
+    string findTypeByName(string id)
+    {
+        int index = hashf(id);
+        Variable* start = head[index];
+
+        if (start == NULL)
+            return "";
+
+        while (start != NULL) {
+
+            if (start->identifier == id) {
+                return start->type;
+            }
+
+            start = start->next;
+        }
+
+        return ""; // not found
+    }
+
+
     int find(string id)
     {
         int index = hashf(id);
@@ -324,26 +520,6 @@ public:
         return -1; // not found
     }
 
-    string findTypeByName(string id)
-    {
-        int index = hashf(id);
-        Variable* start = head[index];
-
-        if (start == NULL)
-            return "-1";
-
-        while (start != NULL) {
-
-            if (start->identifier == id) {
-                return start->type;
-            }
-
-            start = start->next;
-        }
-
-        return "-1"; // not found
-    }
-
     int findType(string id)
     {
         int index = hashf(id);
@@ -355,29 +531,10 @@ public:
         while (start != NULL) {
 
             if (start->identifier == id) {
-                if(start->type == "AddressType"||start->type == "RecordType2") {
+                if(start->type == "AddressType") {
                     return this->findType(start->ptr);
                 }
                 return start->address;
-            }
-            start = start->next;
-        }
-
-        return -1; // not found
-    }
-    int findInc(string id)
-    {
-        int index = hashf(id);
-        Variable* start = head[index];
-
-        if (start == NULL)
-            return -1;
-
-        while (start != NULL) {
-
-            if (start->identifier == id) {
-
-                return start->inc;
             }
             start = start->next;
         }
@@ -399,6 +556,9 @@ public:
                 if(start->type == "AddressType") {
                     return this->sizeFind(start->ptr);
                 }
+//                if(start->type == "RecordType"){
+//                    return
+//                }
                 return start->size;
             }
 
@@ -463,6 +623,7 @@ public:
 };
 extern SymbolTable ST ;
 extern  ArraysTable ArraysST;
+extern RecordsTable RecordsST;
 
 
 class Expr : public Object {
@@ -837,6 +998,7 @@ public :
         dim_->pcodegen(os);
 //        os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;//dec 4lt
         is_dim = false;
+        ActiveArray2 = var_->getName();
         dim_counter = 1;
     }
     virtual Object * clone () const { return new ArrayRef(*this);}
@@ -867,10 +1029,13 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(varExt_ && varIn_);
+        extern_name_main =  varExt_->getName();
         varExt_->pcodegen(os);
-        Extern_name = varExt_->getName();
         is_intern = true;
+        Extern_name = varExt_->getName();
+        recordsPrintVector.push_back(Extern_name);
         varIn_->pcodegen(os);
+        recordsPrintVector.clear();
         is_intern = false;
     }
     virtual Object * clone () const { return new RecordRef(*this);}
@@ -892,8 +1057,8 @@ public :
     }
 
     string getName(){
-    return var_->getName();
-}
+        return var_->getName();
+    }
 
     void print (ostream& os) {
         os<<"Node name : AddressRef"<<endl;
@@ -1461,21 +1626,32 @@ public:
         os<<"Node name : IdeType"<<endl;
     }
     string getType(){
-
-        return ST.findTypeByName(*name_)+"2";
-        //return "IdeType";
+        return "IdeType";
     }
     int getSize(){
         return 1;
     }
     void pcodegen(ostream& os) {
         is_var =true;
-        if(!is_address_type && !is_var_declaration) {
+        if(!is_address_type && !is_var_declaration) { //////////////////////////////////////////////////////////////////////////////////////
             if(is_intern){
                 int a = ST.find(*name_);
                 int b =ST.findType(Extern_name);
-                os << "inc " << ST.find(*name_)-ST.findType(Extern_name) << endl;
-//                os << "inc " << ST.findInc(*name_)<< endl;
+                string typeInSt = ST.findTypeByName(Extern_name);
+                string s = *name_;
+                string main_string_betsa = extern_name_main;
+                extern_name_main = Extern_name;
+                if(typeInSt == "IdeType") {
+                    recordsPrintVector.push_back(*name_);
+                    os << "inc " << RecordsST.getAddressOfField(recordsPrintVector) << endl;
+                } else if(typeInSt == "AddressType"){
+                    os << "inc " << ST.find(*name_)-ST.findType(Extern_name) << endl;
+                }else if(typeInSt == "" && ST.findTypeByName(ActiveArray2) == "ArrayType" ){
+                    os<<"inc "<<RecordsST.getRecordByName(ArraysST.find(ActiveArray2).getInner()).getFieldAddressInRecordByName(*name_)<<endl;
+                }else{
+                    os<<"inc "<<RecordsST.getRecordByName(Extern_name).getFieldAddressInRecordByName(*name_)<<endl;
+                }
+
             }
             else{
                 os << "ldc " << ST.find(*name_) << endl;
@@ -1523,8 +1699,8 @@ public :
         return "ArrayType";
     }
     string getName(){
-    return type_->getName();
-}
+        return type_->getName();
+    }
     int getSize(){
         int size = up_ - low_ +1 ;
         size *= type_->getSize();
@@ -1532,13 +1708,13 @@ public :
     }
     int getFactor(){
         if (type_->getType() != "SimpleType"){
-           int temp = ST.sizeFind(type_->getName());
-           if (temp == -1){
-               return 1;
-           }
-           else{
-               return temp;
-           }
+            int temp = ST.sizeFind(type_->getName());
+            if (temp == -1){
+                return 1;
+            }
+            else{
+                return temp;
+            }
         }
         else
             return 1;
@@ -1549,20 +1725,20 @@ public :
             return type_->getName();
         }
         else return "SimpleType";
-}
+    }
 
     void setArraySizes(string name_){
 
-            int tmp = up_-low_+1;
-            ArraysST.find(name_).setD(tmp);
+        int tmp = up_-low_+1;
+        ArraysST.find(name_).setD(tmp);
 
-            ArraysST.find(name_).setL(low_);
+        ArraysST.find(name_).setL(low_);
 
-            if(getType() != "SimpleType") {
-                type_->setArraySizes(name_);
-            }
-
+        if(getType() != "SimpleType") {
+            type_->setArraySizes(name_);
         }
+
+    }
 
     void pcodegen(ostream& os) {
         assert(type_);
@@ -1631,7 +1807,7 @@ public :
     }
     string getName(){
         return  type_->getName();
-      }
+    }
     void pcodegen(ostream& os) {
         assert(type_);
         is_address_type = true;
@@ -1675,47 +1851,62 @@ public:
         assert(type_);
         int size=1;
         int current_size=1;
-        if(type_->getType()=="RecordType"){
-            inner_record_counter = 0;
-        }
 
         if(type_->getType()=="ArrayType"){
             ArraysST.getArraysVector().push_back(ArrayClass(*name_));
             int typeSize = type_->getFactor();
             ArraysST.find(*name_).setInnerType(type_->getInner());
-            ArraysST.find(*name_).setFactor(typeSize);
             size = typeSize*type_->getSize();
+            ArraysST.find(*name_).setFactor(typeSize);
+            ArraysST.find(*name_).setSize(size);
             type_->setArraySizes(*name_);
 
         }
-        if(type_->getType()=="RecordType"){
-            current_size = stacksize;
+        if(is_record_type_var){
+            // if idetype means it's an array or a record
+            //adding a new field to the last record which is the record we are in.
+            if(type_->getType() == "IdeType"){
+                if(ST.findTypeByName(type_->getName()) == "ArrayType") {
+                    RecordField field(*name_, type_->getName(), false, ArraysST.find(type_->getName()).getSize(), true);
+                    RecordsST.getRecordsVector()[RecordsST.getRecordsVector().size() - 1].getFieldsInRecord().push_back(
+                            field);
+                } else {
+                    RecordField field(*name_, type_->getName(), false, RecordsST.getRecordByName(type_->getName()).getRecordActualSize(), false);
+                    RecordsST.getRecordsVector()[RecordsST.getRecordsVector().size() - 1].getFieldsInRecord().push_back(
+                            field);
+                }
+            } else if(type_->getType() == "ArrayType"){
+                RecordField field(*name_, type_->getName(), false, ArraysST.find(*name_).getSize(), true);
+                RecordsST.getRecordsVector()[RecordsST.getRecordsVector().size()-1].getFieldsInRecord().push_back(field);
+            }else{
+                RecordField field(*name_, type_->getName(), true, 1, false);
+                RecordsST.getRecordsVector()[RecordsST.getRecordsVector().size()-1].getFieldsInRecord().push_back(field);
+            }
         }
-        int backup = inner_record_counter;
+
+        if(type_->getType()=="RecordType"){
+            is_record_type_var = true;
+            current_size = stacksize;
+            Record newRecord;
+            RecordsST.getRecordsVector().push_back(newRecord);
+        }
+
         type_->pcodegen(os);
-        inner_record_counter = backup;
         int address = stacksize;
         if(type_->getType()=="RecordType"){
-            if(ST.findTypeByName(type_->getName())=="RecordType"){
-                size = ST.sizeFind(type_->getName());
-                stacksize += size;
-            }
-            else {
-                size = stacksize - current_size;
-                address = stacksize - size;
-            }
-        }
-        if(type_->getType()=="RecordType2"){
-
-                size = ST.sizeFind(type_->getName());
-                stacksize += size;
-
+            size = stacksize-current_size;
+            address = stacksize -size;
         }
         if(ST.insert(*name_,type_->getType(),address,size,type_->getName())){
-            if(type_->getType()!="RecordType"&&type_->getType()!="RecordType2"){
+            if(type_->getType()!="RecordType"){
                 stacksize+=size;
+
+            }else{
+                RecordsST.getRecordsVector()[RecordsST.getRecordsVector().size()-1].setName(*name_);
+                RecordsST.getRecordsVector()[RecordsST.getRecordsVector().size()-1].setSize(RecordsST.getRecordsVector()[RecordsST.getRecordsVector().size()-1].getRecordActualSize());
+                is_record_type_var = false;
             }
-            inner_record_counter=inner_record_counter+size;
+
         }
 
         ST.print();
@@ -1741,7 +1932,7 @@ public :
     }
     string getName(){
         return *name_;
-        }
+    }
 
     virtual ~Parameter () {
         if (type_) delete type_;
