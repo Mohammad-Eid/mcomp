@@ -116,6 +116,8 @@ extern bool is_record_type_var;
 extern string extern_name_main;
 extern vector<string> recordsPrintVector;
 extern string ActiveArray2;
+extern bool is_array_ref_;
+extern bool  is_assign_array;
 /**
  * classes
  */
@@ -991,12 +993,20 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(var_ && dim_);
+        is_array_ref_ =true;
         var_->pcodegen(os);
         ActiveArray = var_->getName();
         dim_counter = 1;
         is_dim =true;
+        is_array_ref_ = false;
+//        os << "ind"<<endl;
+
         dim_->pcodegen(os);
+        if(!is_assign_array){
+            os << "ind"<<endl;
+        }
 //        os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;//dec 4lt
+
         is_dim = false;
         ActiveArray2 = var_->getName();
         dim_counter = 1;
@@ -1475,8 +1485,9 @@ public :
         assert(var_ && exp_);
         //os << "hello from class assign" << endl;
         codel = true;
-
+        is_assign_array = true;
         exp_->pcodegen(os);
+        is_assign_array = false;
         is_assign = true;
         is_var_assign =true;
         var_->pcodegen(os);
@@ -1655,13 +1666,19 @@ public:
             }
             else{
                 os << "ldc " << ST.find(*name_) << endl;
+
             }
 
-            // we have to change the 5 here so when it actually increases
-            if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop || (is_switch && !is_expr) || is_address_ref) {
-                os << "ind" << endl;
-                codel = true;
+            if(!is_array_ref_ && is_address_ref) {
+                // we have to change the 5 here so when it actually increases
+                if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
+                    (is_switch && !is_expr) || is_address_ref) {
+                    os << "ind" << endl;
+                    codel = true;
+                }
             }
+
+
 
             if(is_new && !is_address_ref) {
                 os << "ldc"  <<" "<< ST.sizeFind(*name_)<< endl;
