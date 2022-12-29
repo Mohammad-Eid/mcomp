@@ -1,0 +1,47 @@
+ldc 5
+inc 0
+ldc 1
+sto
+ldc 6
+inc 0
+ldc 7
+sto
+ldc 6
+inc 1
+ldc 5
+sto
+ldc 6
+inc 1
+ind
+inc 0
+ldc 1
+sto
+ldc 5
+inc 0
+ind
+print
+ldc 8
+inc 0
+inc 1
+ind
+inc 0
+ldc 8
+inc 0
+inc 0
+ind
+sto
+ldc 10
+ind
+ldc 1
+ixa 40
+ldc 8
+ixa 8
+ldc 4
+ixa 2
+dec 102
+inc 0
+inc 1
+ind
+inc 0
+ldc 3
+sto 

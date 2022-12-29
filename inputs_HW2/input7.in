@@ -1,0 +1,12 @@
+PROGRAM p
+
+	a FIXED;
+	b  ^a;
+	c  ^b;
+{
+	b = 5;
+	c = 6;
+	b^ = 1;
+	c^^ = 2;
+	WRITE(c^^);
+}

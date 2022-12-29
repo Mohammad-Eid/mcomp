@@ -1,0 +1,21 @@
+PROGRAM  p
+       a RECORD {
+             b FIXED;
+};
+             c RECORD {
+ 		d FIXED;
+		e ^a;
+};
+m RECORD {
+   f c;
+};
+point^  ARRAY[1:5] OF ARRAY [7:11] OF ARRAY [3:6] OF m;
+{
+       a.b = 1;
+       c.d = 7;
+       c.e = 5;
+       c.e^.b = 1;
+       WRITE(a.b);
+       m.f.e^.b = m.f.d ;
+      point^ [1][8][4].f.e^.b = 3 ;
+}

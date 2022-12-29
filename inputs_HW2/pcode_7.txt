@@ -1,0 +1,20 @@
+ldc 6
+ldc 5
+sto
+ldc 7
+ldc 6
+sto
+ldc 6
+ind
+ldc 1
+sto
+ldc 7
+ind
+ind
+ldc 2
+sto
+ldc 7
+ind
+ind
+ind
+print
