@@ -319,9 +319,9 @@ public:
             : name(name), type(type),
               isBasic(isBasic),
               size(
-                                                                                                     addressInRecord) {}
+                      addressInRecord) {}
 
-     string &getName()  {
+    string &getName()  {
         return name;
     }
 
@@ -329,7 +329,7 @@ public:
         RecordField::name = name;
     }
 
-     string &getType()  {
+    string &getType()  {
         return type;
     }
 
@@ -362,10 +362,10 @@ class Record{
 
 public:
     Record(const string &name ="", const vector<RecordField> &fieldsInRecord = vector<RecordField>(), int size = 0) : name(name),
-                                                                                      fieldsInRecord(fieldsInRecord),
-                                                                                      size(size) {}
+                                                                                                                      fieldsInRecord(fieldsInRecord),
+                                                                                                                      size(size) {}
 
-     string &getName() {
+    string &getName() {
         return name;
     }
 
@@ -373,7 +373,7 @@ public:
         Record::name = name;
     }
 
-     vector<RecordField> &getFieldsInRecord(){
+    vector<RecordField> &getFieldsInRecord(){
         return fieldsInRecord;
     }
 
@@ -435,7 +435,7 @@ public:
 
     RecordsTable(const vector<Record> &recordsVector) : RecordsVector(recordsVector) {}
 
-     vector<Record> &getRecordsVector() {
+    vector<Record> &getRecordsVector() {
         return RecordsVector;
     }
 
