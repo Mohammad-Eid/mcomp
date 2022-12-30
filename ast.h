@@ -777,6 +777,7 @@ public :
                     break;
             }
 //            is_equal = false;
+
             // somemessage
             inc_flag = false;
             is_var = false;
@@ -1651,6 +1652,7 @@ public:
     void pcodegen(ostream& os) {
         is_var =true;
         if(!is_address_type && !is_var_declaration) { //////////////////////////////////////////////////////////////////////////////////////
+            bool addresTypeDeref = false;
             if(is_intern){
                 int a = ST.find(*name_);
                 int b =ST.findType(Extern_name);
@@ -1658,28 +1660,34 @@ public:
                 string s = *name_;
                 string main_string_betsa = extern_name_main;
                 extern_name_main = Extern_name;
+
                 if(typeInSt == "IdeType") {
                     recordsPrintVector.push_back(*name_);
                     os << "inc " << RecordsST.getAddressOfField(recordsPrintVector) << endl;
                 } else if(typeInSt == "AddressType"){
                     os << "inc " << ST.find(*name_)-ST.findType(Extern_name) << endl;
+                    addresTypeDeref = true;
                 }else if(typeInSt == "" && ST.findTypeByName(ActiveArray2) == "ArrayType" ){
                     os<<"inc "<<RecordsST.getRecordByName(ArraysST.find(ActiveArray2).getInner()).getFieldAddressInRecordByName(*name_)<<endl;
                 }else{
+
                     os<<"inc "<<RecordsST.getRecordByName(Extern_name).getFieldAddressInRecordByName(*name_)<<endl;
+
                 }
 
             }
             else{
                 os << "ldc " << ST.find(*name_) << endl;
             }
+            if(is_address_ref && is_record_ref){
+                os << "ind" <<endl;
+            }
 
 
-
-                if(!is_array_ind && !is_record_ref) {
+                if(!is_array_ind && !is_record_ref ) {
                     // we have to change the 5 here so when it actually increases
                     if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
-                        (is_switch && !is_expr) || is_address_ref) {
+                        (is_switch && !is_expr) || is_address_ref ) {
                         os << "ind" << endl;
                         codel = true;
                     }
