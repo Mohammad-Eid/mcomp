@@ -17,8 +17,8 @@ ixa 1
 dec 51
 ind
 mul
-sto 
-ldc 105 
+sto
+ldc 105
 inc 0
 ldc 1
 ixa 100

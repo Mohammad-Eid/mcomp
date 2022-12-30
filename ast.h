@@ -116,8 +116,9 @@ extern bool is_record_type_var;
 extern string extern_name_main;
 extern vector<string> recordsPrintVector;
 extern string ActiveArray2;
-extern bool is_array_ref_;
-extern bool  is_assign_array;
+extern bool is_array_ind;
+extern bool is_record_ref;
+extern bool is_extern;
 /**
  * classes
  */
@@ -854,13 +855,19 @@ public:
     }
     void pcodegen(ostream& os) {
         assert(exp_);
+
         exp_->pcodegen(os);
+
         int counterBackup = dim_counter;
         string arrayBackup = ActiveArray;
         if(dim_counter == ArraysST.find(ActiveArray).getDim()){
             os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;
             ActiveArray = ArraysST.find(ActiveArray).getInner();
             dim_counter = 0;
+
+            if(((is_assign  && !is_add ) || is_equal || is_print ) && ActiveArray.empty() ){
+                os<<"ind"<<endl;
+            }
         }
         dim_counter++;
         if (dim_) {
@@ -897,7 +904,7 @@ public:
                 ((is_print || is_assign) && !is_expr) || is_unary ||
                 (is_switch && !is_expr)) {
 
-                if (is_dim) {
+                if (is_dim && !is_add) {
                     int temp = ArraysST.find(ActiveArray).getIxaAtIndex(
                             dim_counter);
                     os << "ldc " << i_ << endl;
@@ -993,20 +1000,16 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(var_ && dim_);
-        is_array_ref_ =true;
+        is_array_ind = true;
         var_->pcodegen(os);
         ActiveArray = var_->getName();
         dim_counter = 1;
         is_dim =true;
-        is_array_ref_ = false;
-//        os << "ind"<<endl;
+        is_array_ind = false;
 
         dim_->pcodegen(os);
-        if(!is_assign_array){
-            os << "ind"<<endl;
-        }
-//        os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;//dec 4lt
 
+//        os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;//dec 4lt
         is_dim = false;
         ActiveArray2 = var_->getName();
         dim_counter = 1;
@@ -1040,13 +1043,17 @@ public :
     void pcodegen(ostream& os) {
         assert(varExt_ && varIn_);
         extern_name_main =  varExt_->getName();
+        is_record_ref = true;
+        is_extern = true;
         varExt_->pcodegen(os);
+        is_record_ref = false;
         is_intern = true;
         Extern_name = varExt_->getName();
         recordsPrintVector.push_back(Extern_name);
         varIn_->pcodegen(os);
         recordsPrintVector.clear();
         is_intern = false;
+        is_extern= false;
     }
     virtual Object * clone () const { return new RecordRef(*this);}
 
@@ -1485,9 +1492,8 @@ public :
         assert(var_ && exp_);
         //os << "hello from class assign" << endl;
         codel = true;
-        is_assign_array = true;
+
         exp_->pcodegen(os);
-        is_assign_array = false;
         is_assign = true;
         is_var_assign =true;
         var_->pcodegen(os);
@@ -1666,17 +1672,18 @@ public:
             }
             else{
                 os << "ldc " << ST.find(*name_) << endl;
-
             }
 
-            if(!is_array_ref_ && is_address_ref) {
-                // we have to change the 5 here so when it actually increases
-                if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
-                    (is_switch && !is_expr) || is_address_ref) {
-                    os << "ind" << endl;
-                    codel = true;
+
+
+                if(!is_array_ind && !is_record_ref) {
+                    // we have to change the 5 here so when it actually increases
+                    if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
+                        (is_switch && !is_expr) || is_address_ref) {
+                        os << "ind" << endl;
+                        codel = true;
+                    }
                 }
-            }
 
 
 
