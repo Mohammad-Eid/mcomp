@@ -1,0 +1,11 @@
+PROGRAM H
+
+	a ARRAY[1:5] OF ARRAY [7:11] OF ARRAY [3:6] OF FIXED;
+	b  RECORD{
+		c ARRAY[1:5] OF a;
+		d  ARRAY[2:3] OF ARRAY [2:8] OF a;
+};
+
+{
+	WRITE(a[5+8-4*3][7][2]);
+}

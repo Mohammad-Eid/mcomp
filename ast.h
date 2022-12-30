@@ -666,6 +666,7 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(op_);
+        is_expr = true;
         codel = false;
         if( op_ >= 292 && op_ <= 297){
             is_equal = true;
@@ -897,7 +898,7 @@ public:
                 ((is_print || is_assign) && !is_expr) || is_unary ||
                 (is_switch && !is_expr)) {
 
-                if (is_dim) {
+                if (is_dim && !is_expr) {
                     int temp = ArraysST.find(ActiveArray).getIxaAtIndex(
                             dim_counter);
                     os << "ldc " << i_ << endl;
