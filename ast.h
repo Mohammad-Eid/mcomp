@@ -119,6 +119,12 @@ extern string ActiveArray2;
 extern bool is_array_ind;
 extern bool is_record_ref;
 extern bool is_extern;
+extern bool print_ixa_in_expr;
+extern int print_ixa_in_expr_val;
+extern bool got_array_pointer;
+extern string array_point_name  ;
+extern bool stupid_flag ;
+extern string externName2;
 /**
  * classes
  */
@@ -320,9 +326,9 @@ public:
             : name(name), type(type),
               isBasic(isBasic),
               size(
-                                                                                                     addressInRecord) {}
+                      addressInRecord) {}
 
-     string &getName()  {
+    string &getName()  {
         return name;
     }
 
@@ -330,7 +336,7 @@ public:
         RecordField::name = name;
     }
 
-     string &getType()  {
+    string &getType()  {
         return type;
     }
 
@@ -363,10 +369,10 @@ class Record{
 
 public:
     Record(const string &name ="", const vector<RecordField> &fieldsInRecord = vector<RecordField>(), int size = 0) : name(name),
-                                                                                      fieldsInRecord(fieldsInRecord),
-                                                                                      size(size) {}
+                                                                                                                      fieldsInRecord(fieldsInRecord),
+                                                                                                                      size(size) {}
 
-     string &getName() {
+    string &getName() {
         return name;
     }
 
@@ -374,7 +380,7 @@ public:
         Record::name = name;
     }
 
-     vector<RecordField> &getFieldsInRecord(){
+    vector<RecordField> &getFieldsInRecord(){
         return fieldsInRecord;
     }
 
@@ -436,7 +442,7 @@ public:
 
     RecordsTable(const vector<Record> &recordsVector) : RecordsVector(recordsVector) {}
 
-     vector<Record> &getRecordsVector() {
+    vector<Record> &getRecordsVector() {
         return RecordsVector;
     }
 
@@ -777,7 +783,6 @@ public :
                     break;
             }
 //            is_equal = false;
-
             // somemessage
             inc_flag = false;
             is_var = false;
@@ -861,6 +866,10 @@ public:
 
         int counterBackup = dim_counter;
         string arrayBackup = ActiveArray;
+        if(print_ixa_in_expr){
+            print_ixa_in_expr = false;
+            os << "ixa " << print_ixa_in_expr_val << endl;
+        }
         if(dim_counter == ArraysST.find(ActiveArray).getDim()){
             os<<"dec "<<ArraysST.find(ActiveArray).getSubpart() <<endl;
             ActiveArray = ArraysST.find(ActiveArray).getInner();
@@ -870,6 +879,7 @@ public:
                 os<<"ind"<<endl;
             }
         }
+
         dim_counter++;
         if (dim_) {
             dim_->pcodegen(os);
@@ -905,11 +915,17 @@ public:
                 ((is_print || is_assign) && !is_expr) || is_unary ||
                 (is_switch && !is_expr)) {
 
-                if (is_dim && !is_add) {
+                if (is_dim && !is_add ) {
                     int temp = ArraysST.find(ActiveArray).getIxaAtIndex(
                             dim_counter);
                     os << "ldc " << i_ << endl;
-                    os << "ixa " << temp << endl;
+                    if(is_expr){
+                        print_ixa_in_expr = true;
+                        print_ixa_in_expr_val = temp;
+                    }else {
+
+                        os << "ixa " << temp << endl;
+                    }
                 } else {
                     os << "ldc " << i_ << endl;
                 }
@@ -993,6 +1009,9 @@ public :
         if (dim_) delete dim_;
     }
 
+    string getName(){
+        return var_->getName();
+}
     void print (ostream& os) {
         os<<"Node name : ArrayRef"<<endl;
         assert(var_ && dim_);
@@ -1043,13 +1062,15 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(varExt_ && varIn_);
-        extern_name_main =  varExt_->getName();
+        //extern_name_main =  varExt_->getName();
         is_record_ref = true;
         is_extern = true;
         varExt_->pcodegen(os);
         is_record_ref = false;
         is_intern = true;
         Extern_name = varExt_->getName();
+        stupid_flag =true;
+        externName2 = varExt_->getName();
         recordsPrintVector.push_back(Extern_name);
         varIn_->pcodegen(os);
         recordsPrintVector.clear();
@@ -1075,6 +1096,12 @@ public :
     }
 
     string getName(){
+    if (stupid_flag){
+        stupid_flag= false;
+        string temp = var_->getName();
+        return ArraysST.find(temp).getInner();
+    }
+    else
         return var_->getName();
     }
 
@@ -1669,6 +1696,9 @@ public:
                     addresTypeDeref = true;
                 }else if(typeInSt == "" && ST.findTypeByName(ActiveArray2) == "ArrayType" ){
                     os<<"inc "<<RecordsST.getRecordByName(ArraysST.find(ActiveArray2).getInner()).getFieldAddressInRecordByName(*name_)<<endl;
+                }else if(Extern_name == ""){
+                    os << "inc " << ST.find(*name_)-ST.findType(externName2) << endl;
+                    addresTypeDeref = true;
                 }else{
 
                     os<<"inc "<<RecordsST.getRecordByName(Extern_name).getFieldAddressInRecordByName(*name_)<<endl;
@@ -1684,14 +1714,14 @@ public:
             }
 
 
-                if(!is_array_ind && !is_record_ref ) {
-                    // we have to change the 5 here so when it actually increases
-                    if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
-                        (is_switch && !is_expr) || is_address_ref ) {
-                        os << "ind" << endl;
-                        codel = true;
-                    }
+            if(!is_array_ind && !is_record_ref ) {
+                // we have to change the 5 here so when it actually increases
+                if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
+                    (is_switch && !is_expr) || is_address_ref ) {
+                    os << "ind" << endl;
+                    codel = true;
                 }
+            }
 
 
 
@@ -1837,11 +1867,26 @@ public :
     string getType(){
         return "AddressType";
     }
+
+    string getInner(){
+    return type_->getType();
+}
     string getName(){
         return  type_->getName();
     }
     void pcodegen(ostream& os) {
         assert(type_);
+        if(got_array_pointer){
+            got_array_pointer =false;
+            ArraysST.getArraysVector().push_back(ArrayClass(array_point_name));
+            int typeSize = type_->getFactor();
+            ArraysST.find(array_point_name).setInnerType(type_->getInner());
+            int size = typeSize*type_->getSize();
+            ArraysST.find(array_point_name).setFactor(typeSize);
+            ArraysST.find(array_point_name).setSize(size);
+            type_->setArraySizes(array_point_name);
+
+        }
         is_address_type = true;
         type_->pcodegen(os);
         is_address_type = false;
@@ -1921,6 +1966,13 @@ public:
             current_size = stacksize;
             Record newRecord;
             RecordsST.getRecordsVector().push_back(newRecord);
+        }
+        if(type_->getType()=="AddressType"){
+            if(type_->getInner() == "ArrayType"){
+                got_array_pointer = true;
+                array_point_name = *name_;
+            }
+
         }
 
         type_->pcodegen(os);

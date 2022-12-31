@@ -50,6 +50,12 @@ bool is_record_type_var = false;
 bool is_array_ind = false;
 bool is_record_ref = false;
 bool is_extern = false;
+bool print_ixa_in_expr = false;
+int print_ixa_in_expr_val =0 ;
+bool got_array_pointer = false;
+bool stupid_flag =false;
+string externName2;
+string array_point_name  ;
 int dim_counter = 0;
 string ActiveArray2= "";
 int inner_record_counter = 0 ;
@@ -123,5 +129,4 @@ int main(int argc, char* argv[])
     treeFile.close();
     return (0);
 }
-
 
