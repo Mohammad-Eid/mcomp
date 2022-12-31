@@ -1009,9 +1009,9 @@ public :
         if (dim_) delete dim_;
     }
 
-    string getName(){
-        return var_->getName();
-}
+//    string getName(){
+//        return var_->getName();
+//}
     void print (ostream& os) {
         os<<"Node name : ArrayRef"<<endl;
         assert(var_ && dim_);
@@ -1095,15 +1095,15 @@ public :
         if (var_) delete var_;
     }
 
-    string getName(){
-    if (stupid_flag){
-        stupid_flag= false;
-        string temp = var_->getName();
-        return ArraysST.find(temp).getInner();
-    }
-    else
-        return var_->getName();
-    }
+//    string getName(){
+//    if (stupid_flag){
+//        stupid_flag= false;
+//        string temp = var_->getName();
+//        return ArraysST.find(temp).getInner();
+//    }
+//    else
+//        return var_->getName();
+//    }
 
     void print (ostream& os) {
         os<<"Node name : AddressRef"<<endl;
@@ -1689,15 +1689,8 @@ public:
                 extern_name_main = Extern_name;
 
                 if(typeInSt == "IdeType") {
-
                     recordsPrintVector.push_back(*name_);
-                    if(ST.find(recordsPrintVector[0]) != -1){
-                        if(ST.findTypeByName(recordsPrintVector[0]) == "AddressType"){
-                                recordsPrintVector[0] = ArraysST.find(recordsPrintVector[0]).getInner();
-                        }
-                    }
                         os << "inc " << RecordsST.getAddressOfField(recordsPrintVector) << endl;
-
                 } else if(typeInSt == "AddressType"){
                     os << "inc " << ST.find(*name_)-ST.findType(Extern_name) << endl;
                     addresTypeDeref = true;
