@@ -1689,15 +1689,22 @@ public:
                 extern_name_main = Extern_name;
 
                 if(typeInSt == "IdeType") {
+
                     recordsPrintVector.push_back(*name_);
-                    os << "inc " << RecordsST.getAddressOfField(recordsPrintVector) << endl;
+                    if(ST.find(recordsPrintVector[0]) != -1){
+                        if(ST.findTypeByName(recordsPrintVector[0]) == "AddressType"){
+                                recordsPrintVector[0] = ArraysST.find(recordsPrintVector[0]).getInner();
+                        }
+                    }
+                        os << "inc " << RecordsST.getAddressOfField(recordsPrintVector) << endl;
+
                 } else if(typeInSt == "AddressType"){
                     os << "inc " << ST.find(*name_)-ST.findType(Extern_name) << endl;
                     addresTypeDeref = true;
                 }else if(typeInSt == "" && ST.findTypeByName(ActiveArray2) == "ArrayType" ){
                     os<<"inc "<<RecordsST.getRecordByName(ArraysST.find(ActiveArray2).getInner()).getFieldAddressInRecordByName(*name_)<<endl;
                 }else if(Extern_name == ""){
-                    os << "inc " << ST.find(*name_)-ST.findType(externName2) << endl;
+                    os<<"inc "<<RecordsST.getRecordByName(externName2).getFieldAddressInRecordByName(*name_)<<endl;
                     addresTypeDeref = true;
                 }else{
 
