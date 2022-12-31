@@ -123,6 +123,8 @@ extern bool print_ixa_in_expr;
 extern int print_ixa_in_expr_val;
 extern bool got_array_pointer;
 extern string array_point_name  ;
+extern bool stupid_flag ;
+extern string externName2;
 /**
  * classes
  */
@@ -1007,6 +1009,9 @@ public :
         if (dim_) delete dim_;
     }
 
+    string getName(){
+        return var_->getName();
+}
     void print (ostream& os) {
         os<<"Node name : ArrayRef"<<endl;
         assert(var_ && dim_);
@@ -1057,13 +1062,15 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(varExt_ && varIn_);
-        extern_name_main =  varExt_->getName();
+        //extern_name_main =  varExt_->getName();
         is_record_ref = true;
         is_extern = true;
         varExt_->pcodegen(os);
         is_record_ref = false;
         is_intern = true;
         Extern_name = varExt_->getName();
+        stupid_flag =true;
+        externName2 = varExt_->getName();
         recordsPrintVector.push_back(Extern_name);
         varIn_->pcodegen(os);
         recordsPrintVector.clear();
@@ -1089,6 +1096,12 @@ public :
     }
 
     string getName(){
+    if (stupid_flag){
+        stupid_flag= false;
+        string temp = var_->getName();
+        return ArraysST.find(temp).getInner();
+    }
+    else
         return var_->getName();
     }
 
@@ -1683,6 +1696,9 @@ public:
                     addresTypeDeref = true;
                 }else if(typeInSt == "" && ST.findTypeByName(ActiveArray2) == "ArrayType" ){
                     os<<"inc "<<RecordsST.getRecordByName(ArraysST.find(ActiveArray2).getInner()).getFieldAddressInRecordByName(*name_)<<endl;
+                }else if(Extern_name == ""){
+                    os << "inc " << ST.find(*name_)-ST.findType(externName2) << endl;
+                    addresTypeDeref = true;
                 }else{
 
                     os<<"inc "<<RecordsST.getRecordByName(Extern_name).getFieldAddressInRecordByName(*name_)<<endl;

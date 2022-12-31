@@ -53,6 +53,8 @@ bool is_extern = false;
 bool print_ixa_in_expr = false;
 int print_ixa_in_expr_val =0 ;
 bool got_array_pointer = false;
+bool stupid_flag =false;
+string externName2;
 string array_point_name  ;
 int dim_counter = 0;
 string ActiveArray2= "";

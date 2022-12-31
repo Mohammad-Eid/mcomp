@@ -11,6 +11,5 @@ m RECORD {
 };
 point^  ARRAY[1:5] OF ARRAY [7:11] OF ARRAY [3:6] OF m;
 {
-
       point^ [1][8][4].f.e^.b = 3 ;
 }
