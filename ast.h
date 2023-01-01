@@ -1747,16 +1747,17 @@ public:
             if(is_address_ref && is_record_ref){
                 os << "ind" <<endl;
             }
-            if(!is_assign_new) {
-//                for (int i = 0; i < ref_counter; i++) {
-//                    os << "ind" << endl;
-//                }
-                os << "ind" << endl;
-            }
+
             if(!is_array_ind && !is_record_ref ) {
                 // we have to change the 5 here so when it actually increases
                 if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
                     (is_switch && !is_expr) || is_address_ref ) {
+                    if(!is_assign_new) {
+//                for (int i = 0; i < ref_counter; i++) {
+//                    os << "ind" << endl;
+//                }
+                        os << "ind" << endl;
+                    }
 //                    os << "ind" << endl;
                     for (int i = 0; i < ref_counter; i++) {
                         os << "ind" << endl;
