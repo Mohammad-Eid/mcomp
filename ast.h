@@ -472,7 +472,7 @@ public:
         return getAddressOfField(tmp);
 
     }
-
+    friend class SymbolTable;
 
 };
 
@@ -500,6 +500,25 @@ public:
 
             if (start->identifier == id) {
                 return start->type;
+            }
+
+            start = start->next;
+        }
+
+        return ""; // not found
+    }
+    string findPtrByName(string id)
+    {
+        int index = hashf(id);
+        Variable* start = head[index];
+
+        if (start == NULL)
+            return "";
+
+        while (start != NULL) {
+
+            if (start->identifier == id) {
+                return start->ptr;
             }
 
             start = start->next;
@@ -1009,9 +1028,9 @@ public :
         if (dim_) delete dim_;
     }
 
-//    string getName(){
-//        return var_->getName();
-//}
+    string getName(){
+        return var_->getName();
+}
     void print (ostream& os) {
         os<<"Node name : ArrayRef"<<endl;
         assert(var_ && dim_);
@@ -1065,14 +1084,25 @@ public :
         //extern_name_main =  varExt_->getName();
         is_record_ref = true;
         is_extern = true;
+
         varExt_->pcodegen(os);
+
+
         is_record_ref = false;
         is_intern = true;
+
         Extern_name = varExt_->getName();
         stupid_flag =true;
         externName2 = varExt_->getName();
-        recordsPrintVector.push_back(Extern_name);
+        if(ST.findTypeByName(Extern_name) != "RecordType" && ST.findTypeByName(Extern_name) != "IdeType" ){
+            externName2 = ST.findPtrByName(Extern_name);
+            recordsPrintVector.push_back(externName2);
+        }else { recordsPrintVector.push_back(Extern_name); }
+
+
         varIn_->pcodegen(os);
+
+
         recordsPrintVector.clear();
         is_intern = false;
         is_extern= false;
@@ -1095,15 +1125,9 @@ public :
         if (var_) delete var_;
     }
 
-//    string getName(){
-//    if (stupid_flag){
-//        stupid_flag= false;
-//        string temp = var_->getName();
-//        return ArraysST.find(temp).getInner();
-//    }
-//    else
-//        return var_->getName();
-//    }
+string getName(){
+    return var_->getName();
+}
 
     void print (ostream& os) {
         os<<"Node name : AddressRef"<<endl;
@@ -1690,13 +1714,17 @@ public:
 
                 if(typeInSt == "IdeType") {
                     recordsPrintVector.push_back(*name_);
-                        os << "inc " << RecordsST.getAddressOfField(recordsPrintVector) << endl;
+                    os << "inc " << RecordsST.getAddressOfField(recordsPrintVector) << endl;
                 } else if(typeInSt == "AddressType"){
                     os << "inc " << ST.find(*name_)-ST.findType(Extern_name) << endl;
                     addresTypeDeref = true;
                 }else if(typeInSt == "" && ST.findTypeByName(ActiveArray2) == "ArrayType" ){
                     os<<"inc "<<RecordsST.getRecordByName(ArraysST.find(ActiveArray2).getInner()).getFieldAddressInRecordByName(*name_)<<endl;
-                }else if(Extern_name == ""){
+                }
+                else if(typeInSt == "ArrayType" && ST.findTypeByName(ActiveArray2) == "ArrayType" ){
+                    os<<"inc "<<RecordsST.getRecordByName(ArraysST.find(ActiveArray2).getInner()).getFieldAddressInRecordByName(*name_)<<endl;
+                }
+                else if(Extern_name == ""){
                     os<<"inc "<<RecordsST.getRecordByName(externName2).getFieldAddressInRecordByName(*name_)<<endl;
                     addresTypeDeref = true;
                 }else{
@@ -1869,8 +1897,8 @@ public :
     }
 
     string getInner(){
-    return type_->getType();
-}
+        return type_->getType();
+    }
     string getName(){
         return  type_->getName();
     }
