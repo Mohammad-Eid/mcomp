@@ -999,6 +999,7 @@ public:
         os<<"Node name : trueConst. Value is true"<<endl;
     }
     void pcodegen(ostream& os) {
+
     }
     virtual Object * clone () const { return new True();}
 
@@ -1010,6 +1011,8 @@ public :
         os<<"Node name : trueConst. Value is false"<<endl;
     }
     void pcodegen(ostream& os) {
+
+
     }
     virtual Object * clone () const { return new False();}
 };
@@ -1768,7 +1771,8 @@ public:
 
 
 
-            if(is_new && !is_address_ref) {
+            if(is_new && !is_address_ref && !is_record_ref) {
+
                 os << "ldc"  <<" "<< ST.sizeFind(*name_)<< endl;
                 os << "new" << endl;
             }
