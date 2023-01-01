@@ -1,4 +1,3 @@
-
 ldc 6
 ldc 5
 ind 

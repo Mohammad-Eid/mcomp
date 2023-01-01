@@ -81,6 +81,7 @@
 extern int loop_counter;
 extern int if_counter;
 extern int stacksize;
+extern int ref_counter;
 extern bool codel;
 extern bool is_var;
 extern bool is_add;
@@ -125,6 +126,7 @@ extern bool got_array_pointer;
 extern string array_point_name  ;
 extern bool stupid_flag ;
 extern string externName2;
+extern bool is_assign_new;
 /**
  * classes
  */
@@ -1137,7 +1139,9 @@ string getName(){
     void pcodegen(ostream& os) {
         assert(var_);
         is_address_ref = true;
+        ref_counter++;
         var_->pcodegen(os);
+        ref_counter--;
         is_address_ref = false;
 
 
@@ -1544,12 +1548,14 @@ public :
         assert(var_ && exp_);
         //os << "hello from class assign" << endl;
         codel = true;
-
+        is_assign_new = true;
         exp_->pcodegen(os);
+        is_assign_new = false;
         is_assign = true;
         is_var_assign =true;
         var_->pcodegen(os);
         is_assign = false;
+        is_assign_new = false;
         is_expr = false;
         is_var_assign = false;
         os << "sto" << endl;
@@ -1741,13 +1747,20 @@ public:
             if(is_address_ref && is_record_ref){
                 os << "ind" <<endl;
             }
-
-
+            if(!is_assign_new) {
+//                for (int i = 0; i < ref_counter; i++) {
+//                    os << "ind" << endl;
+//                }
+                os << "ind" << endl;
+            }
             if(!is_array_ind && !is_record_ref ) {
                 // we have to change the 5 here so when it actually increases
                 if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
                     (is_switch && !is_expr) || is_address_ref ) {
-                    os << "ind" << endl;
+//                    os << "ind" << endl;
+                    for (int i = 0; i < ref_counter; i++) {
+                        os << "ind" << endl;
+                    }
                     codel = true;
                 }
             }
