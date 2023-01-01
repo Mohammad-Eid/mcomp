@@ -1691,6 +1691,7 @@ public:
         return  *name_;
     }
 
+
     void print (ostream& os) {
         os<<"Node name : IdeType"<<endl;
     }
@@ -1994,6 +1995,9 @@ public:
             current_size = stacksize;
             Record newRecord;
             RecordsST.getRecordsVector().push_back(newRecord);
+        }
+        if(type_->getType()=="IdeType"){
+            size = ST.sizeFind(type_->getName());
         }
         if(type_->getType()=="AddressType"){
             if(type_->getInner() == "ArrayType"){
