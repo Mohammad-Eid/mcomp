@@ -2330,6 +2330,7 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(block_);
+        os<<*name_<<":"<<endl;
         if (formal_list_) {
             formal_list_->pcodegen(os);
         }
@@ -2448,6 +2449,7 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(block_);
+        os<<*name_<<":"<<endl;
         block_->pcodegen(os);
     }
     virtual Object * clone () const { return new Program(*this);}
