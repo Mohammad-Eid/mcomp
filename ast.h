@@ -1020,6 +1020,7 @@ public :
 class Var : public Atom {
 };
 
+
 class ArrayRef : public Var {
 public :
     ArrayRef (Object * var, Object * dim) : var_(var),dim_(dim) {assert(var_ && dim_);}
