@@ -478,6 +478,80 @@ public:
 
 };
 
+
+class function{
+    string name;
+    int ssp;
+    int PC;
+    int EP;
+    int dynamicLink;
+    int staticLink;
+    int returnValue;
+
+public:
+    function(const string &name = "", int ssp = 0, int pc =0, int ep = 0, int dynamicLink = 0, int staticLink =0, int returnValue = 0) : name(
+            name), ssp(ssp), PC(pc), EP(ep), dynamicLink(dynamicLink), staticLink(staticLink), returnValue(
+            returnValue) {}
+
+     string &getName() {
+        return name;
+    }
+
+    void setName(const string &name) {
+        function::name = name;
+    }
+
+    int getSsp() {
+        return ssp;
+    }
+
+    void setSsp(int ssp) {
+        function::ssp = ssp;
+    }
+
+    int getPc() {
+        return PC;
+    }
+
+    void setPc(int pc) {
+        PC = pc;
+    }
+
+    int getEp() {
+        return EP;
+    }
+
+    void setEp(int ep) {
+        EP = ep;
+    }
+
+    int getDynamicLink() {
+        return dynamicLink;
+    }
+
+    void setDynamicLink(int dynamicLink_) {
+        function::dynamicLink = dynamicLink_;
+    }
+
+    int getStaticLink() {
+        return staticLink;
+    }
+
+    void setStaticLink(int staticLink_) {
+        function::staticLink = staticLink_;
+    }
+
+    int getReturnValue() {
+        return returnValue;
+    }
+
+    void setReturnValue(int returnValue_) {
+        function::returnValue = returnValue_;
+    }
+
+};
+
+
 class SymbolTable {
     /* Think! what can you add to  symbol_table */
     Variable* head[MAX];
