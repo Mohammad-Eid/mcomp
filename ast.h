@@ -479,7 +479,7 @@ public:
 };
 
 
-class function{
+class func{
     string name;
     int ssp;
     int PC;
@@ -489,7 +489,7 @@ class function{
     int returnValue;
 
 public:
-    function(const string &name = "", int ssp = 0, int pc =0, int ep = 0, int dynamicLink = 0, int staticLink =0, int returnValue = 0) : name(
+    func(const string &name = "", int ssp = 0, int pc =0, int ep = 0, int dynamicLink = 0, int staticLink =0, int returnValue = 0) : name(
             name), ssp(ssp), PC(pc), EP(ep), dynamicLink(dynamicLink), staticLink(staticLink), returnValue(
             returnValue) {}
 
@@ -498,7 +498,7 @@ public:
     }
 
     void setName(const string &name) {
-        function::name = name;
+        func::name = name;
     }
 
     int getSsp() {
@@ -506,7 +506,7 @@ public:
     }
 
     void setSsp(int ssp) {
-        function::ssp = ssp;
+        func::ssp = ssp;
     }
 
     int getPc() {
@@ -530,7 +530,7 @@ public:
     }
 
     void setDynamicLink(int dynamicLink_) {
-        function::dynamicLink = dynamicLink_;
+        func::dynamicLink = dynamicLink_;
     }
 
     int getStaticLink() {
@@ -538,7 +538,7 @@ public:
     }
 
     void setStaticLink(int staticLink_) {
-        function::staticLink = staticLink_;
+        func::staticLink = staticLink_;
     }
 
     int getReturnValue() {
@@ -546,23 +546,23 @@ public:
     }
 
     void setReturnValue(int returnValue_) {
-        function::returnValue = returnValue_;
+        func::returnValue = returnValue_;
     }
 
 };
 
 class FunctionsTable{
-    vector<function> functionVector;
+    vector<func> functionVector;
 
 public:
 
     FunctionsTable() = default;
 
-     vector<function> &getFunctionVector() {
+     vector<func> &getFunctionVector() {
         return functionVector;
     }
 
-    void setFunctionVector(const vector<function> &functionVector_) {
+    void setFunctionVector(const vector<func> &functionVector_) {
         FunctionsTable::functionVector = functionVector_;
     }
 
@@ -2170,7 +2170,7 @@ public :
         type_->print(os);
     }
     void pcodegen(ostream& os) {
-        printWayOfPassing(os);
+//        printWayOfPassing(os);
         assert(type_);
         type_->pcodegen(os);
     }
