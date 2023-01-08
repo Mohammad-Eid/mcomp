@@ -551,7 +551,22 @@ public:
 
 };
 
+class FunctionsTable{
+    vector<function> functionVector;
 
+public:
+
+    FunctionsTable() = default;
+
+     vector<function> &getFunctionVector() {
+        return functionVector;
+    }
+
+    void setFunctionVector(const vector<function> &functionVector_) {
+        FunctionsTable::functionVector = functionVector_;
+    }
+
+};
 class SymbolTable {
     /* Think! what can you add to  symbol_table */
     Variable* head[MAX];
