@@ -70,6 +70,7 @@ string ActiveArray;
 SymbolTable ST;
 ArraysTable ArraysST;
 RecordsTable RecordsST;
+string func_name;
 bool is_equal = false;
 void writeAST(Object* r, fstream& file)
 {

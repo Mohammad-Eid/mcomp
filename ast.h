@@ -127,6 +127,7 @@ extern string array_point_name  ;
 extern bool stupid_flag ;
 extern string externName2;
 extern bool is_assign_new;
+extern string func_name;
 /**
  * classes
  */
@@ -2279,11 +2280,19 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(type_ && block_);
+        os<<*name_<<":"<<endl;
+        os<<"ssp "<<endl;
+        os<<"sep "<<endl;
+        os<< "ujp "<<*name_<<"_begin"<<endl;
         type_->pcodegen(os);
+        string backup = func_name ;
+        func_name = *name_;
         if (formal_list_) {
             formal_list_->pcodegen(os);
         }
         block_->pcodegen(os);
+        func_name = backup;
+        os<<"retf"<<endl;
     }
     virtual Object * clone () const { return new FunctionDeclaration(*this);}
 
@@ -2331,10 +2340,17 @@ public :
     void pcodegen(ostream& os) {
         assert(block_);
         os<<*name_<<":"<<endl;
+        os<<"ssp "<<endl;
+        os<<"sep "<<endl;
+        os<< "ujp "<<*name_<<"_begin"<<endl;
+        string backup = func_name ;
+        func_name = *name_;
         if (formal_list_) {
             formal_list_->pcodegen(os);
         }
         block_->pcodegen(os);
+        func_name = backup;
+        os<<"retp"<<endl;
     }
     virtual Object * clone () const { return new ProcedureDeclaration(*this);}
 
@@ -2409,6 +2425,8 @@ public :
             decl_list_->pcodegen(os);
         }
         assert(stat_seq_);
+//        os<<"someboooody"<<endl;
+        os<<func_name<<"_begin:"<<endl;
         stat_seq_->pcodegen(os);
     }
 
@@ -2450,7 +2468,12 @@ public :
     void pcodegen(ostream& os) {
         assert(block_);
         os<<*name_<<":"<<endl;
+        os<<"ssp "<<endl;
+        os<<"sep "<<endl;
+        os<< "ujp "<<*name_<<"_begin"<<endl;
+        func_name = *name_;
         block_->pcodegen(os);
+        os<<"stp"<<endl;
     }
     virtual Object * clone () const { return new Program(*this);}
 
