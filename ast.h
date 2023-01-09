@@ -2373,7 +2373,7 @@ public :
     int getStackSize(vector<Tuple>& vars){
         int size = 0;
         if (formal_list_){
-            if (formal_->getType() == "ByValueParameter"){
+            if (formal_->getType() == "ByValueParameter" ||formal_->getType() == "ByReferenceParameter"){
                 size = formal_->getSize();
                 Tuple temp = Tuple(formal_->getName(),size);
                 vars.push_back(temp);
@@ -2381,7 +2381,7 @@ public :
             return size + formal_list_->getStackSize(vars);
         }
         else{
-            if (formal_->getType() == "ByValueParameter"){
+            if (formal_->getType() == "ByValueParameter"||formal_->getType() == "ByReferenceParameter"){
                 size = formal_->getSize();
                 Tuple temp = Tuple(formal_->getName(),size);
                 vars.push_back(temp);
@@ -2620,7 +2620,12 @@ public :
     }
 
     int getStackSize(vector<Tuple>& vars){
+    if(decl_list_) {
         return decl_list_->getStackSize(vars);
+    }
+    else{
+        return 0;
+    }
 }
 
     void print (ostream& os) {
