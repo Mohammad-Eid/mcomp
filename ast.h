@@ -137,6 +137,7 @@ extern string func_name;
 class Tuple{
     string name;
     int size;
+    string type = "";
 public:
     Tuple( string name, int size) : name(name), size(size) {
 
@@ -144,6 +145,14 @@ public:
 
     string &getName()  {
         return name;
+    }
+
+    string &getType() {
+        return type;
+    }
+
+    void setType(const string &type_) {
+        type = type_;
     }
 
     int getSize()  {
@@ -608,6 +617,19 @@ public:
             }
         }
        return false;
+    }
+
+
+    bool isRefPramByName(string name_){
+        for(int i = 0; i < functionParameters.size(); i++){
+            if(functionParameters[i].getName() == name_){
+                if(functionParameters[i].getType() == "ByReferenceParameter")
+                return true;
+            }else {
+                return false;
+            }
+        }
+        return false;
     }
 
     int getAddress(string name_){
@@ -1994,6 +2016,10 @@ public:
             }
             else{
                 os << "lda " << FT.ldaFirst(func_name,*name_,0) <<" "<<FT.getAddress(*name_) << endl;
+
+                if(FT.findFuncInVectorByName(func_name).isRefPramByName(*name_)){
+                    os<<"ind"<<endl;
+                }
             }
             if(is_address_ref && is_record_ref){
                 os << "ind" <<endl;
@@ -2002,7 +2028,7 @@ public:
             if(!is_array_ind && !is_record_ref ) {
                 // we have to change the 5 here so when it actually increases
                 if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
-                    (is_switch && !is_expr) || is_address_ref ) {
+                    (is_switch && !is_expr) || is_address_ref  || is_func) {
                     if(!is_assign_new) {
 //                for (int i = 0; i < ref_counter; i++) {
 //                    os << "ind" << endl;
@@ -2408,6 +2434,7 @@ public :
             if (formal_->getType() == "ByValueParameter" ||formal_->getType() == "ByReferenceParameter"){
                 size = formal_->getSize();
                 Tuple temp = Tuple(formal_->getName(),size);
+                temp.setType(formal_->getType());
                 vars.push_back(temp);
             }
             return size + formal_list_->getStackSize(vars);
@@ -2416,6 +2443,7 @@ public :
             if (formal_->getType() == "ByValueParameter"||formal_->getType() == "ByReferenceParameter"){
                 size = formal_->getSize();
                 Tuple temp = Tuple(formal_->getName(),size);
+                temp.setType(formal_->getType());
                 vars.push_back(temp);
                 return size;
             }
