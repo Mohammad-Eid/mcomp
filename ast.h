@@ -125,6 +125,7 @@ extern int print_ixa_in_expr_val;
 extern bool got_array_pointer;
 extern string array_point_name  ;
 extern bool stupid_flag ;
+extern bool is_func;
 extern string externName2;
 extern bool is_assign_new;
 extern string func_name;
@@ -612,14 +613,14 @@ public:
     int getAddress(string name_){
         int count = 5;
 
-        for(int i = 0; i < functionParameters.size(); i++){
+        for(int i = 0;  i <functionParameters.size() ; i++){
             if(functionParameters[i].getName() == name_){
                 return count;
             }
             count+= functionParameters[i].getSize();
         }
 
-        for(int i = 0; i < functionVariables.size(); i++){
+        for(int i = (functionVariables.size() -1); i >= 0 ; i--){
             if(functionVariables[i].getName() == name_){
                 return count;
             }
@@ -973,7 +974,7 @@ public :
 
             switch(op_) {
                 case 286:
-                    if(inc_flag){
+                    if(inc_flag && !is_func){
                         if(is_real_const) {
                             os << "inc " << inc_val << endl; //todo double check
                             is_real_const= false;
@@ -1160,7 +1161,7 @@ public:
             if (left_flag && ((is_equal || is_assign || is_add) && is_expr)) {
                 inc_flag = true;
             }
-            if (!left_flag || !is_add ||
+            if (!left_flag || !is_add ||is_func||
                 ((is_print || is_assign) && !is_expr) || is_unary ||
                 (is_switch && !is_expr)) {
 
@@ -1501,6 +1502,13 @@ public :
         if (expr_list_) delete expr_list_;
     }
 
+    string getType(){
+    return "ProcedureStatement";
+}
+string getName(){
+    return *str_;
+}
+
     void print (ostream& os) {
         os<<"Node name : ProcedureStatement. Proc name : "<<str_<<endl;
         if (expr_list_ ){
@@ -1828,7 +1836,18 @@ public :
             stat_list_->pcodegen(os);
         }
         assert(stat_);
+        if (stat_->getType()=="ProcedureStatement"){
+            //fix mst val #################
+            os<<"mst 0"<<endl;
+            is_func =true;
+        }
+
         stat_->pcodegen(os);
+        if (stat_->getType()=="ProcedureStatement"){
+// fix the cup val ###################
+            os<<"cup "<<FT.getParmsSizeByFname(stat_->getName())<<" "<<stat_->getName()<<endl;
+            is_func =false;
+        }
     }
     virtual Object * clone () const { return new StatementList(*this);}
 

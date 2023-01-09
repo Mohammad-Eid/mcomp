@@ -62,6 +62,7 @@ int dim_counter = 0;
 string ActiveArray2= "";
 int inner_record_counter = 0 ;
 bool is_dim = false;
+bool is_func = false;
 bool is_var_declaration = false;
 vector<string> recordsPrintVector;
 string extern_name_main = "";
