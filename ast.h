@@ -684,6 +684,15 @@ public:
          }
 
      }
+    bool isFuncInVectorByName(string funcName){
+        for(int i = 0; i < functionVector.size(); i++){
+            if(functionVector[i].getName() == funcName){
+                return true;
+            }
+        }
+        return false;
+
+    }
      int getAddress(string varName){
 
          string funcName = getContainingFunctionName(varName);
@@ -980,8 +989,15 @@ public :
         else {
 
             assert(left_ && right_);
+            if(right_->getType()=="ProcedureStatement"){
+                is_func=true;
+                func_ = right_->getName();
+            }
             left_flag = false;
             right_->pcodegen(os);
+            if(right_->getType()=="ProcedureStatement"){
+                is_func=false;
+            }
             codel = false;
             left_flag = true;
             is_expr = true;
@@ -995,8 +1011,14 @@ public :
             } else {
                 is_equal = false;
             }
+            if(left_->getType()=="ProcedureStatement"){
+                is_func=true;
+                func_ = left_->getName();
+            }
             left_->pcodegen(os);
-
+            if(left_->getType()=="ProcedureStatement"){
+                is_func= false;
+            }
             switch(op_) {
                 case 286:
                     if(inc_flag && !is_func){
@@ -1013,7 +1035,7 @@ public :
                         os << "add"<< endl;
                     break;
                 case 287:
-                    if(inc_flag){
+                    if(inc_flag&& !is_func){
                         if(is_real_const) {
                             os << "dec " << inc_val << endl; //todo double check
                             is_real_const= false;
@@ -1062,6 +1084,7 @@ public :
             inc_flag = false;
             is_var = false;
             is_expr = false;
+           // is_func=false;
         }
     }
     virtual Object * clone () const { return new Expr(*this);}
@@ -1823,7 +1846,16 @@ public :
         //os << "hello from class assign" << endl;
         codel = true;
         is_assign_new = true;
-        exp_->pcodegen(os);
+        if(exp_->getType()=="IdeType"){
+            if(FT.isFuncInVectorByName(exp_->getName())){
+                os<<"lda 0 0"<<endl;
+            }else{
+                exp_->pcodegen(os);
+            }
+        }else{
+            exp_->pcodegen(os);
+        }
+
         is_assign_new = false;
         is_assign = true;
         is_var_assign =true;
@@ -1879,7 +1911,6 @@ public :
 
         stat_->pcodegen(os);
         if (stat_->getType()=="ProcedureStatement"){
-// fix the cup val ###################
             os<<"cup "<<FT.getParmsSizeByFname(stat_->getName())<<" "<<stat_->getName()<<endl;
             is_func =false;
         }
