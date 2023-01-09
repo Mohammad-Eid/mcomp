@@ -142,6 +142,7 @@ public:
     virtual string getName(){ return ""; }
     virtual string getInner(){return "";}
     virtual int getFactor(){return 1;}
+    virtual int getStackSize(){return 1;}
     virtual void pcodegen(ostream& os) = 0;
     virtual Object * clone () const {return NULL;}
     virtual ~Object () {}
@@ -2050,6 +2051,12 @@ public:
         type_ = p.type_->clone();
         name_ = new string(*p.name_);
     }
+    int getSize(){
+        return type_->getSize();
+    }
+    string getType(){
+        return "VariableDeclaration";
+    }
 
     virtual ~VariableDeclaration () {
         if (type_) delete type_;
@@ -2159,6 +2166,10 @@ public :
         return *name_;
     }
 
+    int getSize(){
+        return type_->getSize();
+}
+
     virtual ~Parameter () {
         if (type_) delete type_;
         delete name_;
@@ -2187,6 +2198,9 @@ class ByReferenceParameter : public Parameter {
 public :
     ByReferenceParameter (Object * type, const char * name) : Parameter (type,name) {}
     virtual Object * clone () const { return new ByReferenceParameter(*this);}
+    string getType(){
+        return "ByReferenceParameter";
+    }
 protected:
     void printWayOfPassing (ostream& os) const{
         os<<"Node name : ByReferenceParameter ";
@@ -2197,6 +2211,9 @@ class ByValueParameter : public Parameter {
 public :
     ByValueParameter (Object * type, const char * name) : Parameter(type,name) {}
     virtual Object * clone () const { return new ByValueParameter(*this);}
+    string getType(){
+    return "ByValueParameter";
+}
 protected:
     void printWayOfPassing (ostream& os) const{
         os<<"Node name : ByValueParameter ";
@@ -2225,6 +2242,18 @@ public :
         }
         assert(formal_);
         formal_->print(os);
+    }
+    int getStackSize(){
+        int size = 0;
+        if (formal_list_){
+            if (formal_->getType() == "ByValueParameter"){
+                size = formal_->getSize();
+            }
+            return size + formal_list_->getStackSize();
+        }
+        else{
+            return formal_->getSize();
+        }
     }
     void pcodegen(ostream& os) {
         if (formal_list_) {
@@ -2269,6 +2298,9 @@ public :
         return *name_;
     }
 
+    string getType(){
+        return "FunctionDeclaration";
+    }
     void print (ostream& os) {
         os<<"Node name : FunctionDeclaration. Func name is: "<<*name_<<endl;
         assert(type_ && block_);
@@ -2280,9 +2312,12 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(type_ && block_);
+        int ssp = 5 ;
+        ssp += block_->getStackSize();
+        ssp += formal_list_->getStackSize();
         os<<*name_<<":"<<endl;
-        os<<"ssp "<<endl;
-        os<<"sep "<<endl;
+        os<<"ssp "<<ssp<<endl;
+        os<<"sep 50"<<endl;
         os<< "ujp "<<*name_<<"_begin"<<endl;
         type_->pcodegen(os);
         string backup = func_name ;
@@ -2329,6 +2364,9 @@ public :
     string getName(){
         return *name_;
     }
+    string getType(){
+        return "ProcedureDeclaration";
+    }
     void print (ostream& os) {
         os<<"Node name : ProcedureDeclaration. Proc name is: "<<*name_<<endl;
         assert(block_);
@@ -2339,9 +2377,12 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(block_);
+        int ssp = 5 ;
+        ssp += block_->getStackSize();
+        ssp += formal_list_->getStackSize();
         os<<*name_<<":"<<endl;
-        os<<"ssp "<<endl;
-        os<<"sep "<<endl;
+        os<<"ssp "<<ssp<<endl;
+        os<<"sep 50"<<endl;
         os<< "ujp "<<*name_<<"_begin"<<endl;
         string backup = func_name ;
         func_name = *name_;
@@ -2383,6 +2424,19 @@ public :
         assert(decl_);
         decl_->print(os);
     }
+
+    int getStackSize(){
+    int size = 0;
+        if (decl_list_){
+            if (decl_->getType() == "VariableDeclaration"){
+                size = decl_->getSize();
+            }
+            return size + decl_list_->getStackSize();
+        }
+        else{
+            return decl_->getSize();
+        }
+}
     void pcodegen(ostream& os) {
         if (decl_list_) {
             decl_list_->pcodegen(os);
@@ -2411,6 +2465,10 @@ public :
         if (stat_seq_) delete stat_seq_;
         if (decl_list_) delete decl_list_;
     }
+
+    int getStackSize(){
+        return decl_list_->getStackSize();
+}
 
     void print (ostream& os) {
         os<<"Node name : Begin"<<endl;
@@ -2460,6 +2518,10 @@ public :
         return *name_;
     }
 
+    string getType(){
+    return "Program";
+}
+
     void print (ostream& os) {
         os<<"Node name : Root/Program. Program name is: "<<*name_<<endl;
         assert(block_);
@@ -2467,9 +2529,11 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(block_);
+        int ssp = 5 ;
+        ssp += block_->getStackSize();
         os<<*name_<<":"<<endl;
-        os<<"ssp "<<endl;
-        os<<"sep "<<endl;
+        os<<"ssp "<<ssp<<endl;
+        os<<"sep 50"<<endl;
         os<< "ujp "<<*name_<<"_begin"<<endl;
         func_name = *name_;
         block_->pcodegen(os);
