@@ -1014,10 +1014,12 @@ public :
             if(left_->getType()=="ProcedureStatement"){
                 is_func=true;
                 func_ = left_->getName();
+                os<<"mst 1"<<endl;
             }
             left_->pcodegen(os);
             if(left_->getType()=="ProcedureStatement"){
                 is_func= false;
+                os<<"cup "<<FT.getParmsSizeByFname(func_)<<" "<<func_<<endl;
             }
             switch(op_) {
                 case 286:
@@ -1859,7 +1861,13 @@ public :
         is_assign_new = false;
         is_assign = true;
         is_var_assign =true;
+        if(var_->getType()=="ProcedureStatement"){
+            os<<"mst 0"<<endl;
+        }
         var_->pcodegen(os);
+        if(var_->getType()=="ProcedureStatement"){
+            os<<"cup "<<FT.getParmsSizeByFname(var_->getName())<<" "<<var_->getName()<<endl;
+        }
         is_assign = false;
         is_assign_new = false;
         is_expr = false;
@@ -1907,6 +1915,7 @@ public :
             os<<"mst 0"<<endl;
             func_ = stat_->getName();
             is_func =true;
+            parameter_counter=0;
         }
 
         stat_->pcodegen(os);
