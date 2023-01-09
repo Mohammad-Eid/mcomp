@@ -169,7 +169,7 @@ public:
     virtual string getInner(){return "";}
     virtual int getFactor(){return 1;}
     virtual int getStackSize(){return 0;}
-    virtual int getStackSize(vector<string>& vars){return 0;}
+//    virtual int getStackSize(vector<string>& vars){return 0;}
     virtual int getStackSize(vector<Tuple>& vars){return 0;}
     virtual void pcodegen(ostream& os) = 0;
     virtual Object * clone () const {return NULL;}
@@ -518,7 +518,7 @@ class func{
     string dynamicLink;
     string staticLink;
     int returnValue;
-    vector<string> functionVariables;
+    vector<Tuple> functionVariables;
     vector<Tuple> functionParameters;
 
 public:
@@ -538,7 +538,7 @@ public:
         return ssp;
     }
 
-    vector<string>& getVarsVector(){
+    vector<Tuple>& getVarsVector(){
         return functionVariables;
     }
     vector<Tuple>& getParamsVector(){
@@ -550,6 +550,19 @@ public:
 
     int getPc() {
         return PC;
+    }
+    bool containsVar(string varName){
+        for(int i= 0; i<functionParameters.size();i++){
+            if(functionParameters[i].getName()==varName){
+                return true;
+            }
+        }
+        for(int i= 0; i<functionVariables.size();i++){
+            if(functionVariables[i].getName()==varName){
+                return true;
+            }
+        }
+        return false;
     }
 
     void setPc(int pc) {
@@ -589,7 +602,7 @@ public:
     }
    bool isfindVarByName(string name_){
         for(int i = 0; i < functionVariables.size(); i++){
-            if(functionVariables[i] == name_){
+            if(functionVariables[i].getName() == name_){
                 return true;
             }
         }
@@ -619,6 +632,24 @@ public:
              }
          }
 
+     }
+     int getAddress(string varName){
+
+         string funcName = getContainingFunctionName(varName);
+         if(funcName != "Null"){
+            return findFuncInVectorByName(funcName).getAddress(varName);
+         }else{
+             return -1;
+         }
+     }
+
+     string getContainingFunctionName(string varName){
+         for(int i = 0; i < functionVector.size(); i++){
+             if(functionVector[i].containsVar(varName)){
+                 return functionVector[i].getName();
+             }
+         }
+         return "Null";
      }
 
     int ldaFirst(string  funcName, string varName_, int count){
@@ -2515,18 +2546,21 @@ public :
         decl_->print(os);
     }
 
-    int getStackSize(vector<string>& vars){
+    int getStackSize(vector<Tuple>& vars){
     int size = 0;
         if (decl_list_){
             if (decl_->getType() == "VariableDeclaration"){
                 size = decl_->getSize();
-                vars.push_back(decl_->getName());
+                Tuple temp = Tuple(decl_->getName(),size);
+                vars.push_back(temp);
             }
             return size + decl_list_->getStackSize(vars);
         }
         else{
             if (decl_->getType() == "VariableDeclaration") {
-                vars.push_back(decl_->getName());
+                size = decl_->getSize();
+                Tuple temp = Tuple(decl_->getName(),size);
+                vars.push_back(temp);
                 return decl_->getSize();
             }
             else{
@@ -2563,7 +2597,7 @@ public :
         if (decl_list_) delete decl_list_;
     }
 
-    int getStackSize(vector<string>& vars){
+    int getStackSize(vector<Tuple>& vars){
         return decl_list_->getStackSize(vars);
 }
 
