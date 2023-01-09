@@ -1013,8 +1013,21 @@ public :
             }
             if(left_->getType()=="ProcedureStatement"){
                 is_func=true;
+                int mst = 0;
                 func_ = left_->getName();
-                os<<"mst 1"<<endl;
+                func_name=func_name;
+                string temp = FT.findFuncInVectorByName(left_->getName()).getStaticLink();
+                if(left_->getName()==func_name){
+                    os<<"mst 1"<<endl;
+                }
+                else if(temp == func_name){
+                    os<<"mst 0"<<endl;
+                }
+                else if(FT.findFuncInVectorByName(func_name).getStaticLink()==left_->getName()){
+                    os<<"mst 2"<<endl;
+                }else{
+                    os<<"mst 3"<<endl;
+                }
             }
             left_->pcodegen(os);
             if(left_->getType()=="ProcedureStatement"){
@@ -1862,7 +1875,19 @@ public :
         is_assign = true;
         is_var_assign =true;
         if(var_->getType()=="ProcedureStatement"){
-            os<<"mst 0"<<endl;
+            func_name=func_name;
+            string temp = FT.findFuncInVectorByName(var_->getName()).getStaticLink();
+            if(var_->getName()==func_name){
+                os<<"mst 1"<<endl;
+            }
+            else if(temp == func_name){
+                os<<"mst 0"<<endl;
+            }
+            else if(FT.findFuncInVectorByName(func_name).getStaticLink()==var_->getName()){
+                os<<"mst 2"<<endl;
+            }else{
+                os<<"mst 3"<<endl;
+            }
         }
         var_->pcodegen(os);
         if(var_->getType()=="ProcedureStatement"){
@@ -1912,7 +1937,19 @@ public :
         assert(stat_);
         if (stat_->getType()=="ProcedureStatement"){
             //fix mst val #################
-            os<<"mst 0"<<endl;
+            string temp = FT.findFuncInVectorByName(stat_->getName()).getStaticLink();
+            if(stat_->getName()==func_name){
+                os<<"mst 1"<<endl;
+            }
+            else if(temp == func_name){
+                os<<"mst 0"<<endl;
+            }
+            else if(FT.findFuncInVectorByName(func_name).getStaticLink()==stat_->getName()){
+                os<<"mst 2"<<endl;
+            }else{
+                os<<"mst 3"<<endl;
+            }
+            func_name=func_name;
             func_ = stat_->getName();
             is_func =true;
             parameter_counter=0;
