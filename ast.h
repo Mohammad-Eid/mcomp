@@ -129,6 +129,9 @@ extern bool is_func;
 extern string externName2;
 extern bool is_assign_new;
 extern string func_name;
+extern string func_;
+extern bool by_value ;
+extern int parameter_counter ;
 /**
  * classes
  */
@@ -1096,7 +1099,16 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(expr_);
+        if(is_func){
+            parameter_counter++;
+            if(FT.findFuncInVectorByName(func_).getParamsVector()[parameter_counter-1].getType()=="ByValueParameter"){
+                by_value =true;
+            }
+        }
         expr_->pcodegen(os);
+        if(is_func){
+            by_value = false;
+        }
         if (expr_list_) {
             expr_list_->pcodegen(os);
         }
@@ -1861,6 +1873,7 @@ public :
         if (stat_->getType()=="ProcedureStatement"){
             //fix mst val #################
             os<<"mst 0"<<endl;
+            func_ = stat_->getName();
             is_func =true;
         }
 
@@ -2028,7 +2041,7 @@ public:
             if(!is_array_ind && !is_record_ref ) {
                 // we have to change the 5 here so when it actually increases
                 if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
-                    (is_switch && !is_expr) || is_address_ref  || is_func) {
+                    (is_switch && !is_expr) || is_address_ref  || (is_func&&by_value)) {
                     if(!is_assign_new) {
 //                for (int i = 0; i < ref_counter; i++) {
 //                    os << "ind" << endl;
