@@ -133,6 +133,32 @@ extern string func_name;
  */
 
 // base class for tree nodes
+class Tuple{
+    string name;
+    int size;
+public:
+    Tuple( string name, int size) : name(name), size(size) {
+
+    }
+
+    string &getName()  {
+        return name;
+    }
+
+    int getSize()  {
+        return size;
+    }
+    string setName(string name_)  {
+        name = name_;
+    }
+
+    int setSize(int size_)  {
+        size = size_;
+    }
+};
+
+
+
 class Object {
 public:
     virtual void print (ostream& os) = 0;
@@ -142,11 +168,14 @@ public:
     virtual string getName(){ return ""; }
     virtual string getInner(){return "";}
     virtual int getFactor(){return 1;}
-    virtual int getStackSize(vector<string>& vars){return 1;}
+    virtual int getStackSize(){return 0;}
+    virtual int getStackSize(vector<string>& vars){return 0;}
+    virtual int getStackSize(vector<Tuple>& vars){return 0;}
     virtual void pcodegen(ostream& os) = 0;
     virtual Object * clone () const {return NULL;}
     virtual ~Object () {}
 };
+
 
 
 class Variable {
@@ -490,7 +519,7 @@ class func{
     string staticLink;
     int returnValue;
     vector<string> functionVariables;
-    vector<string> functionParameters;
+    vector<Tuple> functionParameters;
 
 public:
     func(const string &name = "", int ssp = 0, int pc =0, int ep = 0, string dynamicLink = "0", string staticLink ="0", int returnValue = 0) : name(
@@ -512,7 +541,7 @@ public:
     vector<string>& getVarsVector(){
         return functionVariables;
     }
-    vector<string>& getParamsVector(){
+    vector<Tuple>& getParamsVector(){
         return functionParameters;
     }
     void setSsp(int ssp) {
@@ -2288,19 +2317,22 @@ public :
         assert(formal_);
         formal_->print(os);
     }
-    int getStackSize(vector<string>& vars){
+    int getStackSize(vector<Tuple>& vars){
         int size = 0;
         if (formal_list_){
             if (formal_->getType() == "ByValueParameter"){
                 size = formal_->getSize();
-                vars.push_back(formal_->getName());
+                Tuple temp = Tuple(formal_->getName(),size);
+                vars.push_back(temp);
             }
             return size + formal_list_->getStackSize(vars);
         }
         else{
             if (formal_->getType() == "ByValueParameter"){
-                vars.push_back(formal_->getName());
-                return formal_->getSize();
+                size = formal_->getSize();
+                Tuple temp = Tuple(formal_->getName(),size);
+                vars.push_back(temp);
+                return size;
             }
             return 0;
         }
