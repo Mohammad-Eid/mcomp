@@ -695,6 +695,16 @@ public:
 //         return ldaSecond(findFuncInVectorByName(funcName).getStaticLink(), varName_);
 //     }
 
+    int getParmsSizeByFname(string name_){
+         int size = 0;
+
+         for(int i = 0; i < findFuncInVectorByName(name_).getParamsVector().size();i++){
+             size+=findFuncInVectorByName(name_).getParamsVector()[i].getSize();
+         }
+        return size;
+
+     }
+
 };
 class SymbolTable {
     /* Think! what can you add to  symbol_table */
