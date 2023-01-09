@@ -142,7 +142,7 @@ public:
     virtual string getName(){ return ""; }
     virtual string getInner(){return "";}
     virtual int getFactor(){return 1;}
-    virtual int getStackSize(){return 1;}
+    virtual int getStackSize(vector<string>& vars){return 1;}
     virtual void pcodegen(ostream& os) = 0;
     virtual Object * clone () const {return NULL;}
     virtual ~Object () {}
@@ -490,9 +490,10 @@ class func{
     string staticLink;
     int returnValue;
     vector<string> functionVariables;
+    vector<string> functionParameters;
 
 public:
-    func(const string &name = "", int ssp = 0, int pc =0, int ep = 0, int dynamicLink = 0, int staticLink =0, int returnValue = 0) : name(
+    func(const string &name = "", int ssp = 0, int pc =0, int ep = 0, string dynamicLink = "0", string staticLink ="0", int returnValue = 0) : name(
             name), ssp(ssp), PC(pc), EP(ep), dynamicLink(dynamicLink), staticLink(staticLink), returnValue(
             returnValue) {}
 
@@ -508,6 +509,12 @@ public:
         return ssp;
     }
 
+    vector<string>& getVarsVector(){
+        return functionVariables;
+    }
+    vector<string>& getParamsVector(){
+        return functionParameters;
+    }
     void setSsp(int ssp) {
         func::ssp = ssp;
     }
@@ -780,7 +787,7 @@ public:
 extern SymbolTable ST ;
 extern  ArraysTable ArraysST;
 extern RecordsTable RecordsST;
-
+extern FunctionsTable FT;
 
 class Expr : public Object {
 public :
@@ -2089,6 +2096,9 @@ public:
     int getSize(){
         return type_->getSize();
     }
+    string getName(){
+        return *name_;
+    }
     string getType(){
         return "VariableDeclaration";
     }
@@ -2278,16 +2288,21 @@ public :
         assert(formal_);
         formal_->print(os);
     }
-    int getStackSize(){
+    int getStackSize(vector<string>& vars){
         int size = 0;
         if (formal_list_){
             if (formal_->getType() == "ByValueParameter"){
                 size = formal_->getSize();
+                vars.push_back(formal_->getName());
             }
-            return size + formal_list_->getStackSize();
+            return size + formal_list_->getStackSize(vars);
         }
         else{
-            return formal_->getSize();
+            if (formal_->getType() == "ByValueParameter"){
+                vars.push_back(formal_->getName());
+                return formal_->getSize();
+            }
+            return 0;
         }
     }
     void pcodegen(ostream& os) {
@@ -2347,9 +2362,13 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(type_ && block_);
+        func temp = func(*name_) ;
+        temp.setStaticLink(func_name);
         int ssp = 5 ;
-        ssp += block_->getStackSize();
-        ssp += formal_list_->getStackSize();
+        ssp += block_->getStackSize(temp.getVarsVector());
+        ssp += formal_list_->getStackSize(temp.getParamsVector());
+        temp.setSsp(ssp);
+        FT.getFunctionVector().push_back(temp);
         os<<*name_<<":"<<endl;
         os<<"ssp "<<ssp<<endl;
         os<<"sep 50"<<endl;
@@ -2412,9 +2431,13 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(block_);
+        func temp = func(*name_) ;
+        temp.setStaticLink(func_name);
         int ssp = 5 ;
-        ssp += block_->getStackSize();
-        ssp += formal_list_->getStackSize();
+        ssp += block_->getStackSize(temp.getVarsVector());
+        ssp += formal_list_->getStackSize(temp.getParamsVector());
+        temp.setSsp(ssp);
+        FT.getFunctionVector().push_back(temp);
         os<<*name_<<":"<<endl;
         os<<"ssp "<<ssp<<endl;
         os<<"sep 50"<<endl;
@@ -2460,16 +2483,23 @@ public :
         decl_->print(os);
     }
 
-    int getStackSize(){
+    int getStackSize(vector<string>& vars){
     int size = 0;
         if (decl_list_){
             if (decl_->getType() == "VariableDeclaration"){
                 size = decl_->getSize();
+                vars.push_back(decl_->getName());
             }
-            return size + decl_list_->getStackSize();
+            return size + decl_list_->getStackSize(vars);
         }
         else{
-            return decl_->getSize();
+            if (decl_->getType() == "VariableDeclaration") {
+                vars.push_back(decl_->getName());
+                return decl_->getSize();
+            }
+            else{
+                return 0;
+            }
         }
 }
     void pcodegen(ostream& os) {
@@ -2501,8 +2531,8 @@ public :
         if (decl_list_) delete decl_list_;
     }
 
-    int getStackSize(){
-        return decl_list_->getStackSize();
+    int getStackSize(vector<string>& vars){
+        return decl_list_->getStackSize(vars);
 }
 
     void print (ostream& os) {
@@ -2564,8 +2594,12 @@ public :
     }
     void pcodegen(ostream& os) {
         assert(block_);
+        func temp = func(*name_) ;
+        temp.setStaticLink("0");
         int ssp = 5 ;
-        ssp += block_->getStackSize();
+        ssp += block_->getStackSize(temp.getVarsVector());
+        temp.setSsp(ssp);
+        FT.getFunctionVector().push_back(temp);
         os<<*name_<<":"<<endl;
         os<<"ssp "<<ssp<<endl;
         os<<"sep 50"<<endl;
