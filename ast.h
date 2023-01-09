@@ -608,6 +608,28 @@ public:
         }
        return false;
     }
+
+    int getAddress(string name_){
+        int count = 5;
+
+        for(int i = 0; i < functionParameters.size(); i++){
+            if(functionParameters[i].getName() == name_){
+                return count;
+            }
+            count+= functionParameters[i].getSize();
+        }
+
+        for(int i = 0; i < functionVariables.size(); i++){
+            if(functionVariables[i].getName() == name_){
+                return count;
+            }
+            count += functionVariables[i].getSize();
+        }
+
+        return -1;
+
+    }
+
 };
 
 class FunctionsTable{
