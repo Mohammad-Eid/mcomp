@@ -1961,7 +1961,7 @@ public:
 
             }
             else{
-                os << "ldc " << ST.find(*name_) << endl;
+                os << "lda " << FT.ldaFirst(func_name,*name_,0) <<" "<<FT.getAddress(*name_) << endl;
             }
             if(is_address_ref && is_record_ref){
                 os << "ind" <<endl;
