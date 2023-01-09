@@ -486,9 +486,10 @@ class func{
     int ssp;
     int PC;
     int EP;
-    int dynamicLink;
-    int staticLink;
+    string dynamicLink;
+    string staticLink;
     int returnValue;
+    vector<string> functionVariables;
 
 public:
     func(const string &name = "", int ssp = 0, int pc =0, int ep = 0, int dynamicLink = 0, int staticLink =0, int returnValue = 0) : name(
@@ -527,19 +528,19 @@ public:
         EP = ep;
     }
 
-    int getDynamicLink() {
+    string getDynamicLink() {
         return dynamicLink;
     }
 
-    void setDynamicLink(int dynamicLink_) {
+    void setDynamicLink(string dynamicLink_) {
         func::dynamicLink = dynamicLink_;
     }
 
-    int getStaticLink() {
+    string getStaticLink() {
         return staticLink;
     }
 
-    void setStaticLink(int staticLink_) {
+    void setStaticLink(string staticLink_) {
         func::staticLink = staticLink_;
     }
 
@@ -550,7 +551,14 @@ public:
     void setReturnValue(int returnValue_) {
         func::returnValue = returnValue_;
     }
-
+   bool isfindVarByName(string name_){
+        for(int i = 0; i < functionVariables.size(); i++){
+            if(functionVariables[i] == name_){
+                return true;
+            }
+        }
+       return false;
+    }
 };
 
 class FunctionsTable{
@@ -567,6 +575,33 @@ public:
     void setFunctionVector(const vector<func> &functionVector_) {
         FunctionsTable::functionVector = functionVector_;
     }
+
+    func& findFuncInVectorByName(string funcName){
+         for(int i = 0; i < functionVector.size(); i++){
+             if(functionVector[i].getName() == funcName){
+                 return functionVector[i];
+             }
+         }
+
+     }
+
+    int ldaFirst(string  funcName, string varName_, int count){
+
+         if(findFuncInVectorByName(funcName).isfindVarByName(varName_)){
+             return count;
+         }
+
+        return ldaFirst(findFuncInVectorByName(funcName).getStaticLink(), varName_,count+1);
+
+     }
+//
+//     int ldaSecond(string  funcName, string varName_){
+//         if(findFuncInVectorByName(funcName).isfindVarByName(varName_)){
+//             return ;
+//         }
+//
+//         return ldaSecond(findFuncInVectorByName(funcName).getStaticLink(), varName_);
+//     }
 
 };
 class SymbolTable {
