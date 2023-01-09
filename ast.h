@@ -653,6 +653,9 @@ public:
                  return functionVector[i];
              }
          }
+         if (funcName == "0"){
+             return functionVector[0];
+         }
 
      }
      int getAddress(string varName){
@@ -676,7 +679,7 @@ public:
 
     int ldaFirst(string  funcName, string varName_, int count){
 
-         if(findFuncInVectorByName(funcName).isfindVarByName(varName_)){
+         if(findFuncInVectorByName(funcName).containsVar(varName_)){
              return count;
          }
 
