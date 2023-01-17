@@ -53,6 +53,7 @@ bool is_array_ind = false;
 bool is_record_ref = false;
 bool is_extern = false;
 bool by_value = false;
+bool mstf_flag = false;
 int parameter_counter = 0;
 string func_;
 bool print_ixa_in_expr = false;

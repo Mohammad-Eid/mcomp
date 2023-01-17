@@ -132,6 +132,7 @@ extern string func_name;
 extern string func_;
 extern bool by_value ;
 extern int parameter_counter ;
+extern bool mstf_flag;
 /**
  * classes
  */
@@ -141,6 +142,7 @@ class Tuple{
     string name;
     int size;
     string type = "";
+    string type_func="";
 public:
     Tuple( string name, int size) : name(name), size(size) {
 
@@ -152,6 +154,14 @@ public:
 
     string &getType() {
         return type;
+    }
+
+     string &getTypeFunc() {
+        return type_func;
+    }
+
+    void setTypeFunc(const string &typeFunc) {
+        type_func = typeFunc;
     }
 
     void setType(const string &type_) {
@@ -179,6 +189,7 @@ public:
     virtual int getSize(){return 1;}
     virtual void setArraySizes(string name_){}
     virtual string getName(){ return ""; }
+    virtual string getFormalTypeName(){return "";}
     virtual string getInner(){return "";}
     virtual int getFactor(){return 1;}
     virtual int getStackSize(){return 0;}
@@ -622,6 +633,13 @@ public:
        return false;
     }
 
+    Tuple& getPramByName(string name__){
+        for(int i = 0; i < functionParameters.size();i++){
+            if(functionParameters[i].getName() == name__){
+                return functionParameters[i];
+            }
+        }
+    }
 
     bool isRefPramByName(string name_){
         for(int i = 0; i < functionParameters.size(); i++){
@@ -634,6 +652,8 @@ public:
         }
         return false;
     }
+
+
 
     int getAddress(string name_){
         int count = 5;
@@ -657,6 +677,8 @@ public:
     }
 
 };
+
+
 
 class FunctionsTable{
     vector<func> functionVector;
@@ -702,6 +724,16 @@ public:
              return -1;
          }
      }
+
+    bool getIsByRef(string varName){
+
+        string funcName = getContainingFunctionName(varName);
+        if(funcName != "Null"){
+            return findFuncInVectorByName(funcName).isRefPramByName(varName);
+        }else{
+            return false;
+        }
+    }
 
      string getContainingFunctionName(string varName){
          for(int i = 0; i < functionVector.size(); i++){
@@ -1932,10 +1964,37 @@ public :
     }
     void pcodegen(ostream& os) {
         if (stat_list_) {
+            string ss = stat_list_->getType();
+            string ssname = stat_list_->getName();
+
+//             this happens when it's a parameter of type function thus type_func is not empty
+            if (stat_list_->getType()=="ProcedureStatement") {
+                if (!FT.findFuncInVectorByName(func_name).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
+                    os << "mstf " << FT.ldaFirst(func_name,stat_list_->getName(),0)<<" " << FT.getAddress(stat_list_->getName())<< endl;
+                    mstf_flag = true;
+                }
+            }
+
+
             stat_list_->pcodegen(os);
+            if (stat_list_->getType()=="ProcedureStatement") {
+                if (!FT.findFuncInVectorByName(func_name).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
+                    os << "smp " << FT.getParmsSizeByFname(FT.findFuncInVectorByName(func_name).getPramByName(stat_list_->getName()).getTypeFunc())<< endl;
+                    os << "cupi"<< FT.ldaFirst(func_name,stat_list_->getName(),0)<<" " << FT.getAddress(stat_list_->getName())<< endl;
+                }
+            }
         }
         assert(stat_);
-        if (stat_->getType()=="ProcedureStatement"){
+        if (stat_->getType()=="ProcedureStatement" && mstf_flag) {
+            if (!FT.findFuncInVectorByName(func_name).getPramByName(stat_->getName()).getTypeFunc().empty()) {
+                os << "mstf " << FT.ldaFirst(func_name,stat_->getName(),0)<<" " << FT.getAddress(stat_->getName())<< endl;
+                mstf_flag = true;
+            }
+        }
+
+        string aaaa = stat_->getType();
+        string aaaas= stat_->getName();
+        if (stat_->getType()=="ProcedureStatement" && !mstf_flag){
             //fix mst val #################
             string temp = FT.findFuncInVectorByName(stat_->getName()).getStaticLink();
             if(stat_->getName()==func_name){
@@ -1956,10 +2015,16 @@ public :
         }
 
         stat_->pcodegen(os);
-        if (stat_->getType()=="ProcedureStatement"){
+        if (stat_->getType()=="ProcedureStatement"&& !mstf_flag){
             os<<"cup "<<FT.getParmsSizeByFname(stat_->getName())<<" "<<stat_->getName()<<endl;
             is_func =false;
         }
+        if(stat_->getType()=="ProcedureStatement"&& mstf_flag){
+            os <<"smp " << FT.getParmsSizeByFname(FT.findFuncInVectorByName(func_name).getPramByName(stat_->getName()).getTypeFunc())<< endl;
+            os<<"cupi"<< FT.ldaFirst(func_name,stat_->getName(),0)<<" " << FT.getAddress(stat_->getName())<< endl;
+        }
+
+
     }
     virtual Object * clone () const { return new StatementList(*this);}
 
@@ -2105,11 +2170,20 @@ public:
 
             }
             else{
-                os << "lda " << FT.ldaFirst(func_name,*name_,0) <<" "<<FT.getAddress(*name_) << endl;
-
-                if(FT.findFuncInVectorByName(func_name).isRefPramByName(*name_)){
-                    os<<"ind"<<endl;
+                string func_checker = *name_;
+                if(!FT.isFuncInVectorByName(func_checker)){
+                    os << "lda " << FT.ldaFirst(func_name, *name_, 0) << " " << FT.getAddress(*name_) << endl;
+                    if(FT.findFuncInVectorByName(func_name).isRefPramByName(*name_)){
+                        os<<"ind"<<endl;
+                    }
+                    if(mstf_flag){
+                        // in case it's a parameter of a function that was sent as a parameter
+                        if(FT.getIsByRef(*name_)){
+                            os<<"ind"<<endl;
+                        }
+                    }
                 }
+
             }
             if(is_address_ref && is_record_ref){
                 os << "ind" <<endl;
@@ -2444,6 +2518,10 @@ public :
     int getSize(){
         return type_->getSize();
 }
+     string getFormalTypeName() {
+         return type_->getName();
+     }
+
 
     virtual ~Parameter () {
         if (type_) delete type_;
@@ -2461,6 +2539,11 @@ public :
         assert(type_);
         type_->pcodegen(os);
     }
+
+    Object *getType1(){
+        return type_;
+    }
+
 protected:
     virtual void printWayOfPassing (ostream& os) const = 0;
 
@@ -2475,6 +2558,9 @@ public :
     virtual Object * clone () const { return new ByReferenceParameter(*this);}
     string getType(){
         return "ByReferenceParameter";
+    }
+    string getFormalTypeName(){
+   return getType1()->getName();
     }
 protected:
     void printWayOfPassing (ostream& os) const{
@@ -2525,6 +2611,7 @@ public :
                 size = formal_->getSize();
                 Tuple temp = Tuple(formal_->getName(),size);
                 temp.setType(formal_->getType());
+                temp.setTypeFunc(formal_->getFormalTypeName());
                 vars.push_back(temp);
             }
             return size + formal_list_->getStackSize(vars);
@@ -2534,6 +2621,7 @@ public :
                 size = formal_->getSize();
                 Tuple temp = Tuple(formal_->getName(),size);
                 temp.setType(formal_->getType());
+                temp.setTypeFunc(formal_->getFormalTypeName());
                 vars.push_back(temp);
                 return size;
             }
@@ -2793,6 +2881,7 @@ public :
         assert(stat_seq_);
 //        os<<"someboooody"<<endl;
         os<<func_name<<"_begin:"<<endl;
+        mstf_flag = false;
         stat_seq_->pcodegen(os);
     }
 
