@@ -6,7 +6,7 @@ f:
 ssp 6
 sep 3
 ujp f_begin
-f_bigen: 
+f_begin: 
 lda 0 5
 lda 1 6
 ind
@@ -22,7 +22,7 @@ ind
 sub
 sto
 retp
-h_bigen:
+h_begin:
 mst 0
 lda 0 5
 ind

@@ -35,8 +35,7 @@ sto
 mst 0
 lda 0 5
 ind
-ldc 1
-add
+inc 1
 ldc 2
 cup 2 external
 stp
