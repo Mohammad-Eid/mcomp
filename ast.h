@@ -2638,6 +2638,10 @@ public :
                 Tuple temp = Tuple(formal_->getName(),size);
                 temp.setType(formal_->getType());
                 temp.setTypeFunc(formal_->getFormalTypeName());
+                if(!temp.getTypeFunc().empty()){
+                    size +=FT.findFuncInVectorByName(temp.getTypeFunc()).getSsp()-5;
+                    temp.setSize(size);
+                }
                 vars.push_back(temp);
             }
             return size + formal_list_->getStackSize(vars);
@@ -2648,6 +2652,10 @@ public :
                 Tuple temp = Tuple(formal_->getName(),size);
                 temp.setType(formal_->getType());
                 temp.setTypeFunc(formal_->getFormalTypeName());
+                if(!temp.getTypeFunc().empty()){
+                    size +=FT.findFuncInVectorByName(temp.getTypeFunc()).getSsp()-6;
+                    temp.setSize(size);
+                }
                 vars.push_back(temp);
                 return size;
             }
