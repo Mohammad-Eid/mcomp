@@ -657,7 +657,14 @@ public:
         return false;
     }
 
-
+    bool isParam(string name__) {
+        for (int i = 0; i < functionParameters.size(); i++) {
+            if (functionParameters[i].getName() == name__) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     int getAddress(string name_){
         int count = 5;
@@ -1978,31 +1985,48 @@ public :
         if (stat_list_) {
             string ss = stat_list_->getType();
             string ssname = stat_list_->getName();
-
+            string func_name_2 = func_name;
 //             this happens when it's a parameter of type function thus type_func is not empty
-            if (stat_list_->getType()=="ProcedureStatement") {
-                if (!FT.findFuncInVectorByName(func_name).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
-                    os << "mstf " << FT.ldaFirst(func_name,stat_list_->getName(),0)<<" " << FT.getAddress(stat_list_->getName())<< endl;
+            if (stat_list_->getType()=="ProcedureStatement" && !FT.isFuncInVectorByName(stat_list_->getName())) {
+
+                while(true){
+                    if(FT.findFuncInVectorByName(func_name_2).isParam(stat_list_->getName())){
+                        break;
+                    } else {
+                        func_name_2 = FT.findFuncInVectorByName(func_name_2).getStaticLink();
+                    }
+                }
+                if (!FT.findFuncInVectorByName( func_name_2 ).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
+                    os << "mstf " << FT.ldaFirst( func_name_2 ,stat_list_->getName(),0)<<" " << FT.getAddress(stat_list_->getName())<< endl;
                     mstf_flag = true;
-                    type_function_name = FT.findFuncInVectorByName(func_name).getPramByName(stat_list_->getName()).getTypeFunc();
+                    type_function_name = FT.findFuncInVectorByName( func_name_2 ).getPramByName(stat_list_->getName()).getTypeFunc();
                 }
             }
 
             ind_frame_count = 0;
             stat_list_->pcodegen(os);
-            if (stat_list_->getType()=="ProcedureStatement") {
-                if (!FT.findFuncInVectorByName(func_name).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
-                    os << "smp " << FT.getParmsSizeByFname(FT.findFuncInVectorByName(func_name).getPramByName(stat_list_->getName()).getTypeFunc())<< endl;
-                    os << "cupi"<< FT.ldaFirst(func_name,stat_list_->getName(),0)<<" " << FT.getAddress(stat_list_->getName())<< endl;
+            if (stat_list_->getType()=="ProcedureStatement" && !FT.isFuncInVectorByName(stat_list_->getName())) {
+
+                if (!FT.findFuncInVectorByName( func_name_2 ).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
+                    os << "smp " << FT.getParmsSizeByFname(FT.findFuncInVectorByName(func_name_2).getPramByName(stat_list_->getName()).getTypeFunc())<< endl;
+                    os << "cupi "<< FT.ldaFirst( func_name_2 ,stat_list_->getName(),0)<<" " << FT.getAddress(stat_list_->getName())<< endl;
                 }
             }
         }
         assert(stat_);
-        if (stat_->getType()=="ProcedureStatement" && mstf_flag) {
-            if (!FT.findFuncInVectorByName(func_name).getPramByName(stat_->getName()).getTypeFunc().empty()) {
-                os << "mstf " << FT.ldaFirst(func_name,stat_->getName(),0)<<" " << FT.getAddress(stat_->getName())<< endl;
+        if (stat_->getType()=="ProcedureStatement" && mstf_flag && !FT.isFuncInVectorByName(stat_->getName())) {
+            string func_name_2 = func_name;
+            while(true){
+                if(FT.findFuncInVectorByName(func_name_2).isParam(stat_->getName())){
+                    break;
+                } else {
+                    func_name_2 = FT.findFuncInVectorByName(func_name_2).getStaticLink();
+                }
+            }
+            if (!FT.findFuncInVectorByName(func_name_2).getPramByName(stat_->getName()).getTypeFunc().empty()) {
+                os << "mstf " << FT.ldaFirst(func_name_2,stat_->getName(),0)<<" " << FT.getAddress(stat_->getName())<< endl;
                 mstf_flag = true;
-                type_function_name = FT.findFuncInVectorByName(func_name).getPramByName(stat_->getName()).getTypeFunc();
+                type_function_name = FT.findFuncInVectorByName(func_name_2).getPramByName(stat_->getName()).getTypeFunc();
 
             }
         }
@@ -2034,7 +2058,7 @@ public :
             os<<"cup "<<FT.getParmsSizeByFname(stat_->getName())<<" "<<stat_->getName()<<endl;
             is_func =false;
         }
-        if(stat_->getType()=="ProcedureStatement"&& mstf_flag){
+        if(stat_->getType()=="ProcedureStatement"&& mstf_flag  && !FT.isFuncInVectorByName(stat_->getName())){
             os <<"smp " << FT.getParmsSizeByFname(FT.findFuncInVectorByName(func_name).getPramByName(stat_->getName()).getTypeFunc())<< endl;
             os<<"cupi"<< FT.ldaFirst(func_name,stat_->getName(),0)<<" " << FT.getAddress(stat_->getName())<< endl;
         }
