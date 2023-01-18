@@ -133,6 +133,9 @@ extern string func_;
 extern bool by_value ;
 extern int parameter_counter ;
 extern bool mstf_flag;
+extern int ind_frame_count;
+extern string type_function_name;
+extern bool is_procedure_dec;
 /**
  * classes
  */
@@ -641,13 +644,13 @@ public:
         }
     }
 
-    bool isRefPramByName(string name_){
+    bool isRefPramByName(string name__){
         for(int i = 0; i < functionParameters.size(); i++){
-            if(functionParameters[i].getName() == name_){
-                if(functionParameters[i].getType() == "ByReferenceParameter")
-                return true;
-            }else {
-                return false;
+            if(functionParameters[i].getName() == name__){
+                string q = functionParameters[i].getType();
+                if(functionParameters[i].getType() == "ByReferenceParameter") {
+                    return true;
+                } else { return false;}
             }
         }
         return false;
@@ -1972,10 +1975,11 @@ public :
                 if (!FT.findFuncInVectorByName(func_name).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
                     os << "mstf " << FT.ldaFirst(func_name,stat_list_->getName(),0)<<" " << FT.getAddress(stat_list_->getName())<< endl;
                     mstf_flag = true;
+                    type_function_name = FT.findFuncInVectorByName(func_name).getPramByName(stat_list_->getName()).getTypeFunc();
                 }
             }
 
-
+            ind_frame_count = 0;
             stat_list_->pcodegen(os);
             if (stat_list_->getType()=="ProcedureStatement") {
                 if (!FT.findFuncInVectorByName(func_name).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
@@ -1989,6 +1993,8 @@ public :
             if (!FT.findFuncInVectorByName(func_name).getPramByName(stat_->getName()).getTypeFunc().empty()) {
                 os << "mstf " << FT.ldaFirst(func_name,stat_->getName(),0)<<" " << FT.getAddress(stat_->getName())<< endl;
                 mstf_flag = true;
+                type_function_name = FT.findFuncInVectorByName(func_name).getPramByName(stat_->getName()).getTypeFunc();
+
             }
         }
 
@@ -2013,7 +2019,7 @@ public :
             is_func =true;
             parameter_counter=0;
         }
-
+        ind_frame_count = 0;
         stat_->pcodegen(os);
         if (stat_->getType()=="ProcedureStatement"&& !mstf_flag){
             os<<"cup "<<FT.getParmsSizeByFname(stat_->getName())<<" "<<stat_->getName()<<endl;
@@ -2177,11 +2183,19 @@ public:
                         os<<"ind"<<endl;
                     }
                     if(mstf_flag){
-                        // in case it's a parameter of a function that was sent as a parameter
-                        if(FT.getIsByRef(*name_)){
-                            os<<"ind"<<endl;
+                        string aaa =FT.findFuncInVectorByName(type_function_name).getParamsVector()[ind_frame_count].getName();
+                        if(FT.findFuncInVectorByName(type_function_name).getParamsVector()[ind_frame_count].getType() == "ByReferenceParameter") {
+                            if (FT.getIsByRef(*name_)) {
+                                os << "ind" << endl;
+                            }
+                        } else if (!FT.getIsByRef(*name_)){
+                            os << "ind" << endl;
+                        } else {
+                            os << "ind" << endl;
+                            os << "ind" << endl;
                         }
                     }
+                    ind_frame_count++;
                 }
 
             }
@@ -2193,7 +2207,7 @@ public:
                 // we have to change the 5 here so when it actually increases
                 if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
                     (is_switch && !is_expr) || is_address_ref  || (is_func&&by_value)) {
-                    if(!is_assign_new) {
+                    if(!is_assign_new && !is_procedure_dec) {
 //                for (int i = 0; i < ref_counter; i++) {
 //                    os << "ind" << endl;
 //                }
@@ -2767,9 +2781,11 @@ public :
         os<< "ujp "<<*name_<<"_begin"<<endl;
         string backup = func_name ;
         func_name = *name_;
+        is_procedure_dec =true;
         if (formal_list_) {
             formal_list_->pcodegen(os);
         }
+        is_procedure_dec =false;
         block_->pcodegen(os);
         func_name = backup;
         os<<"retp"<<endl;
