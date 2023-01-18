@@ -62,6 +62,7 @@ bool got_array_pointer = false;
 bool stupid_flag =false;
 int ind_frame_count = 0;
 string type_function_name = "";
+bool is_string_pram = false;
 string externName2;
 string array_point_name  ;
 int dim_counter = 0;

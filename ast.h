@@ -136,6 +136,7 @@ extern bool mstf_flag;
 extern int ind_frame_count;
 extern string type_function_name;
 extern bool is_procedure_dec;
+extern bool is_string_pram;
 /**
  * classes
  */
@@ -1177,8 +1178,15 @@ public :
             if(FT.findFuncInVectorByName(func_).getParamsVector()[parameter_counter-1].getType()=="ByValueParameter"){
                 by_value =true;
             }
+//            string xp =FT.findFuncInVectorByName(func_).getParamsVector()[parameter_counter-1].getName();
+           string a = expr_->getType();
+            if(expr_->getType() == "IdeType") {
+                is_string_pram = true;
+            }
         }
+
         expr_->pcodegen(os);
+        is_string_pram = false;
         if(is_func){
             by_value = false;
         }
@@ -1624,6 +1632,7 @@ string getName(){
     }
     void pcodegen(ostream& os) {
         if (expr_list_) {
+            string ss = *str_;
             expr_list_->pcodegen(os);
         }
     }
@@ -2207,7 +2216,7 @@ public:
                 // we have to change the 5 here so when it actually increases
                 if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
                     (is_switch && !is_expr) || is_address_ref  || (is_func&&by_value)) {
-                    if(!is_assign_new && !is_procedure_dec) {
+                    if(!is_assign_new && !is_procedure_dec && !(is_string_pram && FT.isFuncInVectorByName(*name_))) {
 //                for (int i = 0; i < ref_counter; i++) {
 //                    os << "ind" << endl;
 //                }
@@ -2221,7 +2230,10 @@ public:
                 }
             }
 
-
+            if(is_string_pram && FT.isFuncInVectorByName(*name_)){
+                os << "ldc "<<*name_<<endl;
+                os<<"lda "<<"1 " <<"0"<<endl;
+            }
 
             if(is_new && !is_address_ref && !is_record_ref) {
 
