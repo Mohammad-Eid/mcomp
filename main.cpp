@@ -62,6 +62,7 @@ bool got_array_pointer = false;
 bool stupid_flag =false;
 int ind_frame_count = 0;
 bool has_brother= false;
+bool begin_flag = false;
 string type_function_name = "";
 string cup_func_name= "";
 bool is_string_pram = false;

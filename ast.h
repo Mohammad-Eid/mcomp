@@ -93,6 +93,7 @@ using namespace std;
 extern bool is_switch;
 extern bool is_if;
 extern bool mst_flag;
+extern bool begin_flag;
 extern double inc_val;
 extern bool is_real_const;
 extern int switch_counter;
@@ -535,6 +536,15 @@ public:
         }
         return getAddressOfField(tmp);
 
+    }
+
+    bool isRecordInTableByName(string name__){
+        for(int i=0; i < RecordsVector.size();i++){
+            if(RecordsVector[i].getName() == name__){
+                return true;
+            }
+        }
+        return false;
     }
     friend class SymbolTable;
 
@@ -2218,6 +2228,10 @@ public:
         return 0;
     }
     void pcodegen(ostream& os) {
+        if(!begin_flag){
+            return;
+        }
+        bool movs_falg_local =false;
         is_var =true;
         bool ind_ref_flag_used = false;
         if(!is_address_type && !is_var_declaration) { //////////////////////////////////////////////////////////////////////////////////////
@@ -2246,7 +2260,9 @@ public:
                     os<<"inc "<<RecordsST.getRecordByName(externName2).getFieldAddressInRecordByName(*name_)<<endl;
                     addresTypeDeref = true;
                 }else{
-
+                    if(!RecordsST.isRecordInTableByName(Extern_name)){
+                        Extern_name = FT.findFuncInVectorByName(func_name).getPramByName(Extern_name).getTypeFunc();
+                    }
                     os<<"inc "<<RecordsST.getRecordByName(Extern_name).getFieldAddressInRecordByName(*name_)<<endl;
 
                 }
@@ -2255,12 +2271,13 @@ public:
             else{
                 string func_checker = *name_;
                 if(!FT.isFuncInVectorByName(func_checker)){
+
                     os << "lda " << FT.ldaFirst(func_name, *name_, 0) << " " << FT.getAddress(*name_) << endl;
                     if(FT.findFuncInVectorByName(func_name).isRefPramByName(*name_)){
                         os<<"ind"<<endl;
                     }
 
-                    if(mst_flag && !mstf_flag){
+                    if(mst_flag && !mstf_flag && !is_extern){
                         string wqeqd = cup_func_name;
                         if(ind_frame_count < FT.findFuncInVectorByName(cup_func_name).getParamsVector().size()) {
                             if (FT.findFuncInVectorByName(cup_func_name).getParamsVector()[ind_frame_count].getType() !=
@@ -2272,14 +2289,16 @@ public:
                                     ind_ref_flag_used = true;
                                 } else{
                                     os<<"movs 2"<<endl;
+                                    movs_falg_local = true;
                                 }
                             }
                             if (FT.findFuncInVectorByName(cup_func_name).getParamsVector()[ind_frame_count].getType() !=
-                                      "ByReferenceParameter" && FT.getIsByRef(*name_)){
+                                      "ByReferenceParameter" && FT.getIsByRef(*name_) && !movs_falg_local){
                                         os<<"ind"<<endl;
 
                             }
                         }
+                        ind_ref_flag_used=true;
                     }
 
                     if(mstf_flag){
@@ -2299,6 +2318,7 @@ public:
                                 os << "ind" << endl;
                             }
                         }
+                        ind_ref_flag_used=true;
                     }
 //                    ind_frame_count++;
                 }
@@ -2308,7 +2328,7 @@ public:
                 os << "ind" <<endl;
             }
 
-            if(!is_array_ind && !is_record_ref ) {
+            if(!is_array_ind && !is_record_ref && !movs_falg_local ) {
                 // we have to change the 5 here so when it actually increases
                 if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
                     (is_switch && !is_expr) || is_address_ref  || (is_func&&by_value)) {
@@ -2319,8 +2339,13 @@ public:
                         os << "ind" << endl;
                     }
 //                    os << "ind" << endl;
-                    for (int i = 0; i < ref_counter; i++) {
-                        os << "ind" << endl;
+                    if(!(is_intern&&mst_flag)) {
+                        for (int i = 0; i < ref_counter; i++) {
+                            os << "ind" << endl;
+                        }
+                    }
+                    if(is_intern&&mst_flag && ref_counter){
+                        os<<"movs 2"<<endl;
                     }
                     codel = true;
                 }
@@ -2453,7 +2478,7 @@ public :
         return "RecordType";
     }
     int getSize(){
-        return 1;
+        return 2;
     }
     void pcodegen(ostream& os) {
         assert(record_list_);
@@ -2594,6 +2619,7 @@ public:
             current_size = stacksize;
             Record newRecord;
             RecordsST.getRecordsVector().push_back(newRecord);
+
         }
         if(type_->getType()=="IdeType"){
             size = ST.sizeFind(type_->getName());
@@ -2620,6 +2646,7 @@ public:
                 RecordsST.getRecordsVector()[RecordsST.getRecordsVector().size()-1].setName(*name_);
                 RecordsST.getRecordsVector()[RecordsST.getRecordsVector().size()-1].setSize(RecordsST.getRecordsVector()[RecordsST.getRecordsVector().size()-1].getRecordActualSize());
                 is_record_type_var = false;
+
             }
 
         }
@@ -2968,6 +2995,7 @@ public :
         }
         else{
             if (decl_->getType() == "VariableDeclaration") {
+                string nadddd = decl_->getName();
                 size = decl_->getSize();
                 Tuple temp = Tuple(decl_->getName(),size);
                 vars.push_back(temp);
@@ -3035,6 +3063,7 @@ public :
         assert(stat_seq_);
 //        os<<"someboooody"<<endl;
         os<<func_name<<"_begin:"<<endl;
+        begin_flag =true;
         mstf_flag = false;
         mst_flag = false;
         stat_seq_->pcodegen(os);

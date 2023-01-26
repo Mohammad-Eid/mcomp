@@ -1,10 +1,10 @@
 h:
 ssp 7
-sep 2 
+sep 50
 ujp h_begin
 p:
 ssp 9
-sep 9
+sep 50
 ujp p_begin
 p_begin:
 mst 1
