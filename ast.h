@@ -2905,6 +2905,7 @@ public :
         is_procedure_dec =false;
         block_->pcodegen(os);
         func_name = backup;
+
         os<<"retp"<<endl;
     }
     virtual Object * clone () const { return new ProcedureDeclaration(*this);}
