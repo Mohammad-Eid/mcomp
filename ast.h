@@ -1193,12 +1193,15 @@ public :
         }
 
         expr_->pcodegen(os);
+        ind_frame_count++;
         is_string_pram = false;
         if(is_func){
             by_value = false;
         }
         if (expr_list_) {
+
             expr_list_->pcodegen(os);
+
         }
     }
     virtual Object * clone () const { return new ExprList(*this);}
@@ -2005,6 +2008,7 @@ public :
 
             ind_frame_count = 0;
             stat_list_->pcodegen(os);
+
             if (stat_list_->getType()=="ProcedureStatement" && !FT.isFuncInVectorByName(stat_list_->getName())) {
 
                 if (!FT.findFuncInVectorByName( func_name_2 ).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
@@ -2172,7 +2176,7 @@ public:
         return "IdeType";
     }
     int getSize(){
-        return 1;
+        return 0;
     }
     void pcodegen(ostream& os) {
         is_var =true;
@@ -2216,19 +2220,24 @@ public:
                         os<<"ind"<<endl;
                     }
                     if(mstf_flag){
-                        string aaa =FT.findFuncInVectorByName(type_function_name).getParamsVector()[ind_frame_count].getName();
-                        if(FT.findFuncInVectorByName(type_function_name).getParamsVector()[ind_frame_count].getType() == "ByReferenceParameter") {
-                            if (FT.getIsByRef(*name_)) {
+                        if(ind_frame_count < FT.findFuncInVectorByName(type_function_name).getParamsVector().size()) {
+                            string aaa = FT.findFuncInVectorByName(
+                                    type_function_name).getParamsVector()[ind_frame_count].getName();
+                            if (FT.findFuncInVectorByName(
+                                    type_function_name).getParamsVector()[ind_frame_count].getType() ==
+                                "ByReferenceParameter") {
+                                if (FT.getIsByRef(*name_)) {
+                                    os << "ind" << endl;
+                                }
+                            } else if (!FT.getIsByRef(*name_)) {
+                                os << "ind" << endl;
+                            } else {
+                                os << "ind" << endl;
                                 os << "ind" << endl;
                             }
-                        } else if (!FT.getIsByRef(*name_)){
-                            os << "ind" << endl;
-                        } else {
-                            os << "ind" << endl;
-                            os << "ind" << endl;
                         }
                     }
-                    ind_frame_count++;
+//                    ind_frame_count++;
                 }
 
             }
@@ -2663,8 +2672,10 @@ public :
                 temp.setType(formal_->getType());
                 temp.setTypeFunc(formal_->getFormalTypeName());
                 if(!temp.getTypeFunc().empty()){
-                    size +=FT.findFuncInVectorByName(temp.getTypeFunc()).getSsp()-5;
+//                    size +=FT.findFuncInVectorByName(temp.getTypeFunc()).getSsp()-5;
+                    size+=2;
                     temp.setSize(size);
+
                 }
                 vars.push_back(temp);
             }
@@ -2677,7 +2688,9 @@ public :
                 temp.setType(formal_->getType());
                 temp.setTypeFunc(formal_->getFormalTypeName());
                 if(!temp.getTypeFunc().empty()){
-                    size +=FT.findFuncInVectorByName(temp.getTypeFunc()).getSsp()-6;
+
+//                    size +=FT.findFuncInVectorByName(temp.getTypeFunc()).getSsp()-5;
+                    size+=2;
                     temp.setSize(size);
                 }
                 vars.push_back(temp);
