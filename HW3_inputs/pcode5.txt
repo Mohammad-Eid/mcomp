@@ -1,14 +1,14 @@
 h:
 ssp 7
-sep 3
+sep 50
 ujp h_begin
 f:
 ssp 7
-sep 7
+sep 50
 ujp f_begin
 p:
 ssp 7
-sep 7
+sep 50
 ujp p_begin
 p_begin:
 mstf 0 5

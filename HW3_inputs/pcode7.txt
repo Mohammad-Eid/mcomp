@@ -1,18 +1,18 @@
 h:
 ssp 6
-sep 2
+sep 50
 ujp h_begin
 a:
 ssp 6
-sep 2
+sep 50
 ujp a_begin
 b:
 ssp 8
-sep 2
+sep 50
 ujp b_begin
 c:
 ssp 7 
-sep 8
+sep 50
 ujp c_begin
 c_begin:
 mst 3

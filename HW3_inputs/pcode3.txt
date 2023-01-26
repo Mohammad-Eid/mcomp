@@ -1,14 +1,14 @@
 procedures:
 ssp 7
-sep 7
+sep 50
 ujp procedures_begin
 external:
 ssp 8
-sep 6 
+sep 50
 ujp external_begin
 internal:
 ssp 15
-sep 3
+sep 50
 ujp internal_begin
 internal_begin:
 lda 1 5
