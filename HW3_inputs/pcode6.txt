@@ -1,10 +1,10 @@
 h:
 ssp 6
-sep 7
+sep 50
 ujp h_begin
 f:
 ssp 7
-sep 3
+sep 50
 ujp f_begin
 f_begin:
 lda 1 5

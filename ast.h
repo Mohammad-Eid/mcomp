@@ -91,6 +91,7 @@ const int MAX = 100;
 using namespace std;
 extern bool is_switch;
 extern bool is_if;
+extern bool mst_flag;
 extern double inc_val;
 extern bool is_real_const;
 extern int switch_counter;
@@ -102,6 +103,7 @@ extern bool was_expr;
 extern bool is_equal;
 extern bool is_print;
 extern bool is_unary;
+extern string cup_func_name;
 extern bool is_var_assign;
 extern bool is_var_loop;
 extern bool is_address_type;
@@ -1059,6 +1061,8 @@ public :
                 int mst = 0;
                 func_ = left_->getName();
                 func_name=func_name;
+                mst_flag = true;
+                cup_func_name = left_->getName();
                 string temp = FT.findFuncInVectorByName(left_->getName()).getStaticLink();
                 if(left_->getName()==func_name){
                     os<<"mst 1"<<endl;
@@ -1931,6 +1935,8 @@ public :
         if(var_->getType()=="ProcedureStatement"){
             func_name=func_name;
             string temp = FT.findFuncInVectorByName(var_->getName()).getStaticLink();
+            mstf_flag =true;
+            cup_func_name = var_->getName();
             if(var_->getName()==func_name){
                 os<<"mst 1"<<endl;
             }
@@ -1986,6 +1992,7 @@ public :
     }
     void pcodegen(ostream& os) {
         if (stat_list_) {
+            int count_11 = 0;
             string ss = stat_list_->getType();
             string ssname = stat_list_->getName();
             string func_name_2 = func_name;
@@ -1997,13 +2004,30 @@ public :
                         break;
                     } else {
                         func_name_2 = FT.findFuncInVectorByName(func_name_2).getStaticLink();
+                        count_11++;
                     }
                 }
                 if (!FT.findFuncInVectorByName( func_name_2 ).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
-                    os << "mstf " << FT.ldaFirst( func_name_2 ,stat_list_->getName(),0)<<" " << FT.getAddress(stat_list_->getName())<< endl;
+                    os << "mstf " << FT.ldaFirst( func_name_2 ,stat_list_->getName(),count_11)<<" " << FT.getAddress(stat_list_->getName())<< endl;
                     mstf_flag = true;
                     type_function_name = FT.findFuncInVectorByName( func_name_2 ).getPramByName(stat_list_->getName()).getTypeFunc();
                 }
+            } else if (stat_list_->getType()=="ProcedureStatement"){
+                string temp = FT.findFuncInVectorByName(stat_list_->getName()).getStaticLink();
+                mst_flag =true;
+                cup_func_name = stat_list_->getName();
+                if(stat_list_->getName()==func_name_2){
+                    os<<"mst 1"<<endl;
+                }
+                else if(temp == func_name_2){
+                    os<<"mst 0"<<endl;
+                }
+                else if(FT.findFuncInVectorByName(func_name_2).getStaticLink()==stat_list_->getName()){
+                    os<<"mst 2"<<endl;
+                }else{
+                    os<<"mst 3"<<endl;
+                }
+
             }
 
             ind_frame_count = 0;
@@ -2013,8 +2037,10 @@ public :
 
                 if (!FT.findFuncInVectorByName( func_name_2 ).getPramByName(stat_list_->getName()).getTypeFunc().empty()) {
                     os << "smp " << FT.getParmsSizeByFname(FT.findFuncInVectorByName(func_name_2).getPramByName(stat_list_->getName()).getTypeFunc())<< endl;
-                    os << "cupi "<< FT.ldaFirst( func_name_2 ,stat_list_->getName(),0)<<" " << FT.getAddress(stat_list_->getName())<< endl;
+                    os << "cupi "<< FT.ldaFirst( func_name_2 ,stat_list_->getName(),count_11)<<" " << FT.getAddress(stat_list_->getName())<< endl;
                 }
+            }else if (stat_list_->getType()=="ProcedureStatement"){
+                os << "cup " << FT.getParmsSizeByFname(stat_list_->getName())<<" "<<stat_list_->getName()<<endl;
             }
         }
         assert(stat_);
@@ -2033,6 +2059,8 @@ public :
                 type_function_name = FT.findFuncInVectorByName(func_name_2).getPramByName(stat_->getName()).getTypeFunc();
 
             }
+        }else if(stat_->getType()=="ProcedureStatement") {
+            mstf_flag =false;
         }
 
         string aaaa = stat_->getType();
@@ -2040,6 +2068,8 @@ public :
         if (stat_->getType()=="ProcedureStatement" && !mstf_flag){
             //fix mst val #################
             string temp = FT.findFuncInVectorByName(stat_->getName()).getStaticLink();
+            mst_flag=true;
+            cup_func_name = stat_->getName();
             if(stat_->getName()==func_name){
                 os<<"mst 1"<<endl;
             }
@@ -2180,6 +2210,7 @@ public:
     }
     void pcodegen(ostream& os) {
         is_var =true;
+        bool ind_ref_flag_used = false;
         if(!is_address_type && !is_var_declaration) { //////////////////////////////////////////////////////////////////////////////////////
             bool addresTypeDeref = false;
             if(is_intern){
@@ -2219,6 +2250,23 @@ public:
                     if(FT.findFuncInVectorByName(func_name).isRefPramByName(*name_)){
                         os<<"ind"<<endl;
                     }
+
+                    if(mst_flag){
+                        string wqeqd = cup_func_name;
+                        if(ind_frame_count < FT.findFuncInVectorByName(cup_func_name).getParamsVector().size()) {
+                            if (FT.findFuncInVectorByName(cup_func_name).getParamsVector()[ind_frame_count].getType() !=
+                                "ByReferenceParameter" &&
+                                !FT.findFuncInVectorByName(func_name).isRefPramByName(*name_)) {
+                                if(FT.findFuncInVectorByName(cup_func_name).getParamsVector()[ind_frame_count].getTypeFunc().empty()) {
+                                    os << "ind" << endl;
+                                    ind_ref_flag_used = true;
+                                } else{
+                                    os<<"movs 2"<<endl;
+                                }
+                            }
+                        }
+                    }
+
                     if(mstf_flag){
                         if(ind_frame_count < FT.findFuncInVectorByName(type_function_name).getParamsVector().size()) {
                             string aaa = FT.findFuncInVectorByName(
@@ -2249,7 +2297,7 @@ public:
                 // we have to change the 5 here so when it actually increases
                 if ((!codel && !is_new) || is_print || is_var_assign || is_if || is_var_loop ||
                     (is_switch && !is_expr) || is_address_ref  || (is_func&&by_value)) {
-                    if(!is_assign_new && !is_procedure_dec && !(is_string_pram && FT.isFuncInVectorByName(*name_))) {
+                    if(!is_assign_new && !is_procedure_dec && !(is_string_pram && FT.isFuncInVectorByName(*name_)) && !ind_ref_flag_used) {
 //                for (int i = 0; i < ref_counter; i++) {
 //                    os << "ind" << endl;
 //                }
@@ -2265,7 +2313,19 @@ public:
 
             if(is_string_pram && FT.isFuncInVectorByName(*name_)){
                 os << "ldc "<<*name_<<endl;
-                os<<"lda "<<"1 " <<"0"<<endl;
+                int lda_count = 1;
+                string temps = cup_func_name;
+                if(FT.findFuncInVectorByName(cup_func_name).getStaticLink() != *name_){
+                    while (true) {
+                        if (temps == *name_) {
+                            break;
+                        } else {
+                            lda_count++;
+                            temps = FT.findFuncInVectorByName(temps).getStaticLink();
+                        }
+                    }
+                }
+                os<<"lda "<<lda_count <<" 0"<<endl;
             }
 
             if(is_new && !is_address_ref && !is_record_ref) {
@@ -2955,6 +3015,7 @@ public :
 //        os<<"someboooody"<<endl;
         os<<func_name<<"_begin:"<<endl;
         mstf_flag = false;
+        mst_flag = false;
         stat_seq_->pcodegen(os);
     }
 
