@@ -84,6 +84,7 @@ extern int stacksize;
 extern int ref_counter;
 extern bool codel;
 extern bool is_var;
+extern bool has_brother;
 extern bool is_add;
 extern bool inc_flag;
 extern bool left_flag;
@@ -1062,6 +1063,7 @@ public :
                 func_ = left_->getName();
                 func_name=func_name;
                 mst_flag = true;
+                mstf_flag =false;
                 cup_func_name = left_->getName();
                 string temp = FT.findFuncInVectorByName(left_->getName()).getStaticLink();
                 if(left_->getName()==func_name){
@@ -1935,7 +1937,8 @@ public :
         if(var_->getType()=="ProcedureStatement"){
             func_name=func_name;
             string temp = FT.findFuncInVectorByName(var_->getName()).getStaticLink();
-            mstf_flag =true;
+            mst_flag =true;
+            mstf_flag = false;
             cup_func_name = var_->getName();
             if(var_->getName()==func_name){
                 os<<"mst 1"<<endl;
@@ -2015,6 +2018,7 @@ public :
             } else if (stat_list_->getType()=="ProcedureStatement"){
                 string temp = FT.findFuncInVectorByName(stat_list_->getName()).getStaticLink();
                 mst_flag =true;
+                mstf_flag =false;
                 cup_func_name = stat_list_->getName();
                 if(stat_list_->getName()==func_name_2){
                     os<<"mst 1"<<endl;
@@ -2069,6 +2073,7 @@ public :
             //fix mst val #################
             string temp = FT.findFuncInVectorByName(stat_->getName()).getStaticLink();
             mst_flag=true;
+            mstf_flag =false;
             cup_func_name = stat_->getName();
             if(stat_->getName()==func_name){
                 os<<"mst 1"<<endl;
@@ -2251,7 +2256,7 @@ public:
                         os<<"ind"<<endl;
                     }
 
-                    if(mst_flag){
+                    if(mst_flag && !mstf_flag){
                         string wqeqd = cup_func_name;
                         if(ind_frame_count < FT.findFuncInVectorByName(cup_func_name).getParamsVector().size()) {
                             if (FT.findFuncInVectorByName(cup_func_name).getParamsVector()[ind_frame_count].getType() !=
@@ -2259,10 +2264,16 @@ public:
                                 !FT.findFuncInVectorByName(func_name).isRefPramByName(*name_)) {
                                 if(FT.findFuncInVectorByName(cup_func_name).getParamsVector()[ind_frame_count].getTypeFunc().empty()) {
                                     os << "ind" << endl;
+
                                     ind_ref_flag_used = true;
                                 } else{
                                     os<<"movs 2"<<endl;
                                 }
+                            }
+                            if (FT.findFuncInVectorByName(cup_func_name).getParamsVector()[ind_frame_count].getType() !=
+                                      "ByReferenceParameter" && FT.getIsByRef(*name_)){
+                                        os<<"ind"<<endl;
+
                             }
                         }
                     }
@@ -2315,7 +2326,7 @@ public:
                 os << "ldc "<<*name_<<endl;
                 int lda_count = 1;
                 string temps = cup_func_name;
-                if(FT.findFuncInVectorByName(cup_func_name).getStaticLink() != *name_){
+                if(FT.findFuncInVectorByName(cup_func_name).getStaticLink() != *name_ ||){
                     while (true) {
                         if (temps == *name_) {
                             break;
@@ -2905,8 +2916,9 @@ public :
         is_procedure_dec =false;
         block_->pcodegen(os);
         func_name = backup;
-
-        os<<"retp"<<endl;
+        if(!has_brother) {
+            os << "retp" << endl;
+        }
     }
     virtual Object * clone () const { return new ProcedureDeclaration(*this);}
 
@@ -2963,9 +2975,13 @@ public :
         }
 }
     void pcodegen(ostream& os) {
+
         if (decl_list_) {
+            has_brother = true;
             decl_list_->pcodegen(os);
+            has_brother =false;
         }
+
         assert(decl_);
         decl_->pcodegen(os);
     }
