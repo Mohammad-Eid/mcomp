@@ -1,14 +1,14 @@
 h:
 ssp 6
-sep 50
+sep 2
 ujp h_begin
 p:
 ssp 6
-sep 50
+sep 3
 ujp p_begin
 m:
 ssp 6
-sep 50
+sep 2
 ujp m_begin
 m_begin:
 lda 0 5
@@ -17,15 +17,15 @@ ldc 5
 sto
 k:
 ssp 8
-sep 50
+sep 8
 ujp k_begin
 d:
 ssp 6
-sep 50
+sep 2 
 ujp d_begin
 d_begin:
 lda 0 5
-ldc 1
+ldc 5
 sto
 retp
 k_begin:

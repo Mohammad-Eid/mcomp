@@ -1085,7 +1085,7 @@ public :
             }
             switch(op_) {
                 case 286:
-                    if(inc_flag && !is_func){
+                    if(inc_flag ){
                         if(is_real_const) {
                             os << "inc " << inc_val << endl; //todo double check
                             is_real_const= false;
@@ -1099,7 +1099,7 @@ public :
                         os << "add"<< endl;
                     break;
                 case 287:
-                    if(inc_flag&& !is_func){
+                    if(inc_flag){
                         if(is_real_const) {
                             os << "dec " << inc_val << endl; //todo double check
                             is_real_const= false;
@@ -1308,7 +1308,11 @@ public:
                         os << "ixa " << temp << endl;
                     }
                 } else {
-                    os << "ldc " << i_ << endl;
+                    if(!(is_func && is_expr && inc_flag)){
+                        os << "ldc " << i_ << endl;
+                    }
+
+
                 }
 
 
