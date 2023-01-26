@@ -2330,7 +2330,7 @@ public:
                 os << "ldc "<<*name_<<endl;
                 int lda_count = 1;
                 string temps = cup_func_name;
-                if(FT.findFuncInVectorByName(cup_func_name).getStaticLink() != *name_ ||){
+                if(FT.findFuncInVectorByName(cup_func_name).getStaticLink() != *name_ ){
                     while (true) {
                         if (temps == *name_) {
                             break;
